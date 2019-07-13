@@ -27,5 +27,5 @@ class NoInputsRequired(Resource):
     )
     def get(self):
         return {
-            'value': request.cookies.get('zss', ''),
+            'value': request.cookies.get('session', ''),
         }

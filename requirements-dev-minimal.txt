@@ -4,5 +4,6 @@ flask
 flask-restplus
 pre-commit
 pytest
+requests
 tox
 tox-pip-extensions
