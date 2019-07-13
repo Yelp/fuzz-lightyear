@@ -17,6 +17,7 @@ string_model = Model(
     },
 )
 
+
 session_model = Model(
     format=api.model(
         'SessionCookieOutput',

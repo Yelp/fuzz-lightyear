@@ -1,5 +1,6 @@
 import pytest
 
+import fuzzer_core
 from fuzzer_core.client import get_client
 from testing import mock_server as mock_server_module
 
@@ -15,6 +16,24 @@ def mock_schema(mock_server):
     yield mock_server_module.get_mock_schema()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def mock_client(mock_schema):
-    return get_client(mock_server_module.URL, mock_schema)
+    fuzzer_core.victim_account(
+        lambda: {
+            '_request_options': {
+                'headers': {
+                    'Cookie': 'session=victim_session',
+                },
+            },
+        },
+    )
+    fuzzer_core.attacker_account(
+        lambda: {
+            '_request_options': {
+                'headers': {
+                    'Cookie': 'session=attacker_session',
+                },
+            },
+        },
+    )
+    yield get_client(mock_server_module.URL, mock_schema)

@@ -17,7 +17,10 @@ class Abstraction:
     """
 
     def __init__(self):
-        self._request_method = None     # type: Callable
+        self.get_victim_session = None      # type: Callable
+        self.get_attacker_session = None    # type: Callable
+
+        self._request_method = None         # type: Callable
 
     @property
     def request_method(self):
