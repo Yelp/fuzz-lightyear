@@ -6,6 +6,7 @@ from .core.routes import configure_routes
 
 def main():
     app = get_current_application()
+    app.config['RESTPLUS_MASK_SWAGGER'] = False
 
     configure_routes(app)
 

@@ -1,7 +1,8 @@
 from functools import lru_cache
+from typing import Callable
 
+from fuzzer_core.client import get_client
 from fuzzer_core.exceptions import ConflictingHandlers
-from fuzzer_core.exceptions import MissingRequiredConfiguration
 
 
 @lru_cache(maxsize=1)
@@ -16,17 +17,14 @@ class Abstraction:
     """
 
     def __init__(self):
-        self._request_method = None
+        self._request_method = None     # type: Callable
 
     @property
     def request_method(self):
         if self._request_method:
             return self._request_method
 
-        raise MissingRequiredConfiguration(
-            'Missing configuration for request handling! Please use '
-            '`@fuzzer_core.make_request` to define this handler.',
-        )
+        return default_request_method
 
     @request_method.setter
     def request_method(self, func):
@@ -37,3 +35,16 @@ class Abstraction:
             raise ConflictingHandlers('make_request')
 
         self._request_method = func
+
+
+def default_request_method(operation_id, tag='default', *args, **kwargs):
+    """
+    :type operation_id: str
+    :param operation_id: there's a unique operationId for each
+        (tag, operation) in the Swagger schema
+
+    :type tag: str
+    :param tag: Swagger tag
+    """
+    future = getattr(getattr(get_client(), tag), operation_id)(*args, **kwargs)
+    return future.result()

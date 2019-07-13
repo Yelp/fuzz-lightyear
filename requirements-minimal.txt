@@ -1,0 +1,2 @@
+# Remember to update setup.py when making changes to this file.
+bravado

@@ -21,7 +21,7 @@ setup(
         'swagger',
     ],
     install_requires=[
-        'requests',
+        'bravado',
     ],
     entry_points={
         'console_scripts': [

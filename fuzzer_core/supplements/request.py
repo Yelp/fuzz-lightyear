@@ -1,5 +1,3 @@
-from functools import wraps
-
 from .abstraction import get_abstraction
 
 
@@ -10,14 +8,5 @@ def make_request(func):
 
     :type func: function
     """
-    @wraps(func)
-    def wrapped(id_token, *args, **kwargs):
-        """
-        :type id_token: str
-        :param id_token: identifier for authentication/authorization
-        """
-        return func(id_token=id_token, *args, **kwargs)
-
-    get_abstraction().request_method = wrapped
-
-    return wrapped
+    get_abstraction().request_method = func
+    return func

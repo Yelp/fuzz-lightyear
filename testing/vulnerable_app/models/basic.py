@@ -1,0 +1,30 @@
+from flask import request
+from flask_restplus import fields
+
+from . import Model
+from ..core.extensions import api
+
+
+string_model = Model(
+    format=api.model(
+        'BasicStringOutput',
+        {
+            'value': fields.String,
+        },
+    ),
+    output=lambda: {
+        'value': 'ok',
+    },
+)
+
+session_model = Model(
+    format=api.model(
+        'SessionCookieOutput',
+        {
+            'session': fields.String,
+        },
+    ),
+    output=lambda: {
+        'session': request.cookies.get('session', ''),
+    },
+)

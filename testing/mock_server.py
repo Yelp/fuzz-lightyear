@@ -1,3 +1,4 @@
+import json
 import logging
 import multiprocessing as mp
 import os
@@ -10,9 +11,12 @@ import requests
 from testing.vulnerable_app.__main__ import main as start_server
 
 
+URL = 'http://localhost:5000'
+
+
 def get_mock_schema():
     with vulnerable_server():
-        return requests.get('http://localhost:5000/schema').json()
+        return requests.get('{}/schema'.format(URL)).json()
 
 
 @contextmanager
@@ -39,12 +43,12 @@ def vulnerable_server():
         yield
     finally:
         if starting_up:
-            requests.post('http://localhost:5000/shutdown')
+            requests.post('{}/shutdown'.format(URL))
 
 
 def is_server_up():
     try:
-        return requests.get('http://localhost:5000').status_code == 200
+        return requests.get(URL).status_code == 200
     except requests.exceptions.ConnectionError:
         return False
 
@@ -63,5 +67,4 @@ def get_path(path='.'):
 
 
 if __name__ == '__main__':
-    with get_mock_schema() as schema:
-        print(schema)
+    print(json.dumps(get_mock_schema()))
