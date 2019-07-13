@@ -29,3 +29,16 @@ session_model = Model(
         'session': request.cookies.get('session', ''),
     },
 )
+
+
+variable_string_model = Model(
+    format=api.model(
+        'VariableResultOutput',
+        {
+            'value': fields.String,
+        },
+    ),
+    output=lambda x: {
+        'value': str(x),
+    },
+)

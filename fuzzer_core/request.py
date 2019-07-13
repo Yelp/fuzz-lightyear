@@ -3,7 +3,7 @@ from .supplements.abstraction import get_abstraction
 
 
 class FuzzingRequest:
-    def __init__(self, operation_id, tag='default'):
+    def __init__(self, operation_id, tag='default', **kwargs):
         """
         :type operation_id: str
         :param operation_id: unique identifier for each Swagger operation.
@@ -14,7 +14,7 @@ class FuzzingRequest:
         self.tag = tag
         self.operation_id = operation_id
 
-        self.fuzzed_input = {}
+        self.fuzzed_input = kwargs
 
     def json(self):
         return {
@@ -40,5 +40,6 @@ class FuzzingRequest:
             tag=self.tag,
             *args,
             **auth,
+            **self.fuzzed_input,
             **kwargs
         )
