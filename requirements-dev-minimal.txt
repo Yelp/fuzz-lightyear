@@ -1,0 +1,8 @@
+-r requirements-minimal.txt
+coverage
+flask
+flask-restplus
+pre-commit
+pytest
+tox
+tox-pip-extensions
