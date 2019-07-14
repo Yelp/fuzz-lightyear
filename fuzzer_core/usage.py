@@ -1,0 +1,64 @@
+import argparse
+import json
+import os
+
+
+def parse_args(argv=None):
+    # TODO: host/port
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-v',
+        '--verbose',
+        help='Increase the verbosity of logging.',
+        action='count',
+    )
+
+    parser.add_argument(
+        'url',
+        type=str,
+        help='URL of server to fuzz.',
+    )
+    parser.add_argument(
+        '-n',
+        '--iterations',
+        nargs='?',
+        default=1,
+        help='Maximum request sequence length to fuzz.',
+        type=int,
+    )
+    parser.add_argument(
+        '--schema',
+        help='Path to local swagger schema.',
+        type=_is_valid_schema,
+    )
+
+    parser.add_argument(
+        '-f',
+        '--fixture',
+        action='append',
+        default=[],
+        help='Path to custom specified fixtures.',
+        type=_is_valid_path,
+    )
+
+    return parser.parse_args(argv)
+
+
+def _is_valid_schema(path):
+    _is_valid_path(path)
+    with open(path) as f:
+        try:
+            return json.loads(f.read())
+        except json.decoder.JSONDecodeError:
+            raise argparse.ArgumentTypeError(
+                'Invalid JSON file: {}'.format(path),
+            )
+
+
+def _is_valid_path(path):
+    if not os.path.exists(path):
+        raise argparse.ArgumentTypeError(
+            'Invalid path: {}'.format(path),
+        )
+
+    return path

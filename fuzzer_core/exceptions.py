@@ -18,7 +18,3 @@ class ConflictingHandlers(BaseFuzzingError):
             *args,
             **kwargs,
         )
-
-
-class MissingRequiredConfiguration(BaseFuzzingError):
-    pass

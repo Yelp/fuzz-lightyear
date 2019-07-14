@@ -11,7 +11,8 @@ import requests
 from testing.vulnerable_app.__main__ import main as start_server
 
 
-URL = 'http://localhost:5000'
+PORT = int(os.environ.get('PORT', 5000))
+URL = 'http://localhost:{}'.format(PORT)
 
 
 def get_mock_schema():

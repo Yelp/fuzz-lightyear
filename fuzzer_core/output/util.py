@@ -1,0 +1,24 @@
+import sys
+
+from .color import AnsiColor
+from .color import colorize
+
+
+def print_error(message):
+    print(
+        '{} {}'.format(
+            colorize('error:', AnsiColor.RED),
+            message,
+        ),
+        file=sys.stderr,
+    )
+
+
+def print_warning(message):
+    print(
+        '{} {}'.format(
+            colorize('warning:', AnsiColor.YELLOW),
+            message,
+        ),
+        file=sys.stderr,
+    )

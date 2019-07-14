@@ -1,4 +1,7 @@
+from functools import lru_cache
+
 from .output.logging import log
+from .output.util import print_warning
 from .supplements.abstraction import get_abstraction
 
 
@@ -16,11 +19,15 @@ class FuzzingRequest:
 
         self.fuzzed_input = kwargs
 
+    @property
+    def id(self):
+        return '{}.{}'.format(
+            self.tag,
+            self.operation_id,
+        )
+
     def json(self):
         return {
-            'tag': self.tag,
-            'id': self.operation_id,
-
             **self.fuzzed_input,
         }
 
@@ -32,9 +39,9 @@ class FuzzingRequest:
         """
         # TODO: fuzz parameters
         if not auth:
-            auth = get_abstraction().get_victim_session()
+            auth = get_victim_session_factory()()
 
-        log.info(f'Fuzzing {self.tag}.{self.operation_id}')
+        log.info(f'Fuzzing {self.id}')
         return get_abstraction().request_method(
             operation_id=self.operation_id,
             tag=self.tag,
@@ -43,3 +50,13 @@ class FuzzingRequest:
             **self.fuzzed_input,
             **kwargs
         )
+
+
+@lru_cache(maxsize=1)
+def get_victim_session_factory():
+    factory = get_abstraction().get_victim_session
+    if factory:
+        return factory
+
+    print_warning('No auth method specified.')
+    return lambda: {}

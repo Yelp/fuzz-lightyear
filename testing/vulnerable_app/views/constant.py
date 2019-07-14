@@ -33,8 +33,4 @@ class WillThrowError(Resource):
     @api.expect(error_code_parser)
     def get(self):
         args = error_code_parser.parse_args()
-
-        try:
-            abort(args.code)
-        except LookupError:
-            abort(500)
+        abort(args.code)
