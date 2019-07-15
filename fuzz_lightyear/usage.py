@@ -2,6 +2,8 @@ import argparse
 import json
 import os
 
+from fuzz_lightyear import VERSION
+
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser()
@@ -10,6 +12,12 @@ def parse_args(argv=None):
         '--verbose',
         help='Increase the verbosity of logging.',
         action='count',
+    )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version=VERSION,
+        help='Displays version information.',
     )
 
     parser.add_argument(
