@@ -2,8 +2,8 @@ from typing import Any
 from typing import List
 
 from bravado.exception import HTTPError
-from bravado_core.exception import SwaggerMappingError
-from jsonschema.exceptions import ValidationError
+from bravado_core.exception import SwaggerMappingError      # type: ignore
+from jsonschema.exceptions import ValidationError           # type: ignore
 
 from ..request import FuzzingRequest
 from ..supplements.abstraction import get_abstraction

@@ -6,7 +6,6 @@ from datetime import timedelta
 from functools import lru_cache
 from typing import List
 from typing import MutableMapping
-from typing import Optional
 from typing import Tuple
 
 from ..result import FuzzingResult
@@ -73,7 +72,7 @@ def _format_result(result: FuzzingResult) -> Tuple[str, str]:
     return (
         ','.join([
             key
-            for key, value in result.responses.test_results.items()
+            for key, value in result.responses.test_results.items()     # type: ignore
             if value
         ]),
         textwrap.dedent("""
@@ -130,14 +129,14 @@ def format_summary(
         summary = [f'{num_failures} failed', *summary]
         color = AnsiColor.RED
 
-    summary = '{} in {} seconds'.format(
+    summary_string = '{} in {} seconds'.format(
         ', '.join(summary),
         round(timing.total_seconds(), 2),
     )
 
     return colorize(
         colorize(
-            format_header(summary),
+            format_header(summary_string),
             color,
         ),
         AnsiColor.BOLD,
@@ -146,14 +145,11 @@ def format_summary(
 
 def format_header(
     message: str,
-    header_line: Optional[str] = '=',
+    header_line: str = '=',
 ) -> str:
     """
     Creates messages like:
         ========== header text here ==========
-
-    :type message: str
-    :type header_line: str
     """
     width = _get_terminal_width()
 

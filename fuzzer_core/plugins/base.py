@@ -1,5 +1,9 @@
 from abc import ABCMeta
 from abc import abstractstaticmethod
+from typing import Any
+from typing import List
+
+from ..request import FuzzingRequest
 
 
 class BasePlugin(metaclass=ABCMeta):
@@ -9,5 +13,9 @@ class BasePlugin(metaclass=ABCMeta):
         return True
 
     @abstractstaticmethod
-    def is_vulnerable(request_sequence, response_sequence):
+    def is_vulnerable(
+        self,
+        request_sequence: List[FuzzingRequest],
+        response_sequence: List[Any],
+    ) -> bool:
         pass

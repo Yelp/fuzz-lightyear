@@ -5,7 +5,7 @@ from typing import List
 
 import hypothesis.strategies as st
 from hypothesis.searchstrategy.strategies import SearchStrategy
-from swagger_spec_validator.common import SwaggerValidationError
+from swagger_spec_validator.common import SwaggerValidationError    # type: ignore
 
 from .client import get_client
 from .datastore import get_user_defined_mapping

@@ -1,20 +1,24 @@
 from typing import Iterator
 from typing import List
+from typing import Optional
 
 from .client import get_client
 from .request import FuzzingRequest
 from .result import FuzzingResult
 
 
-def generate_sequences(n: int) -> Iterator[List[FuzzingResult]]:
+def generate_sequences(n: int) -> Iterator[FuzzingResult]:
     """
     We perform DFS to obtain these sequences, since we want nice output.
 
     :param n: max length of each sequence.
     """
+    # TODO: It would probably better if we can sort on ending operation
+    #       (rather than starting operation), so that it's clearer for
+    #       output.
     client = get_client()
     for tag_group in dir(client):
-        last_results = []
+        last_results = []   # type: List
         for _ in range(n):
             good_sequences = []
             for sequence in _add_request_to_sequence(tag_group, last_results):
@@ -29,7 +33,7 @@ def generate_sequences(n: int) -> Iterator[List[FuzzingResult]]:
 
 def _add_request_to_sequence(
     tag_group: str,
-    seed: List[List[FuzzingRequest]] = None,
+    seed: Optional[List[List[FuzzingRequest]]] = None,
 ) -> List[List[FuzzingRequest]]:
     client = get_client()
 

@@ -12,7 +12,7 @@ class FuzzingResult:
         request_sequence: List[FuzzingRequest],
     ):
         self.requests = request_sequence    # type: List[FuzzingRequest]
-        self.responses = None               # type: Optional[List[ResponseSequence]]
+        self.responses = None               # type: Optional[ResponseSequence]
 
         self.log_output = ''
         self.exception_info = {}            # type: Dict[str, str]

@@ -3,6 +3,8 @@
 *.sw[op]
 
 /.coverage
+/.hypothesis
+/.mypy_cache
 /.pytest_cache
 /.tox
 /venv*

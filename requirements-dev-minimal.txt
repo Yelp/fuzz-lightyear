@@ -2,6 +2,7 @@
 coverage
 flask
 flask-restplus
+mypy
 pre-commit
 pytest
 requests

@@ -1,5 +1,7 @@
 import importlib.util
 import os
+from types import ModuleType
+from typing import Optional
 
 
 def import_fixtures(path: str):
@@ -17,7 +19,7 @@ def import_fixtures(path: str):
             import_module_from_path(path)
 
 
-def import_module_from_path(path: str):
+def import_module_from_path(path: str) -> Optional[ModuleType]:
     """
     Source: https://stackoverflow.com/a/67692
 
@@ -31,9 +33,9 @@ def import_module_from_path(path: str):
         path,
     )
     if not spec:
-        return
+        return None
 
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    spec.loader.exec_module(module)     # type: ignore
 
     return module

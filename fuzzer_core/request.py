@@ -4,8 +4,8 @@ from typing import Callable
 from typing import Dict
 
 from bravado.client import CallableOperation
-from bravado_core.param import get_param_type_spec
-from cached_property import cached_property
+from bravado_core.param import get_param_type_spec      # type: ignore
+from cached_property import cached_property             # type: ignore
 from hypothesis.searchstrategy.strategies import SearchStrategy
 
 from .client import get_client
