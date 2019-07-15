@@ -22,6 +22,8 @@ setup(
     ],
     install_requires=[
         'bravado',
+        'cached-property',
+        'hypothesis',
     ],
     entry_points={
         'console_scripts': [

@@ -41,7 +41,12 @@ def main(argv: Optional[List[Any]] = None):
     ):
         try:
             result.responses = run_sequence(result.requests)
-        except (HTTPError, SwaggerMappingError, ValidationError) as e:
+        except (
+            HTTPError,
+            SwaggerMappingError,
+            SwaggerValidationError,
+            ValidationError,
+        ) as e:
             outputter.record_exception(result, e)
 
         outputter.record_result(result)
