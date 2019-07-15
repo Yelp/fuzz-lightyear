@@ -40,8 +40,6 @@ def format_results(
             info=info,
         )
 
-        # TODO: cURL request, for easier reproduction?
-
         if not result.log_output:
             continue
 
@@ -85,7 +83,8 @@ def _format_result(result: FuzzingResult) -> Tuple[str, str]:
             ),
             request_json_dump=json.dumps(
                 [
-                    request.json()
+                    # TODO: fix. This needs a mock_client for testing.
+                    str(request)
                     for request in result.requests
                 ],
                 indent=2,

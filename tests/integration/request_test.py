@@ -4,6 +4,39 @@ from fuzzer_core.request import FuzzingRequest
 from fuzzer_core.supplements.abstraction import get_abstraction
 
 
+def test_json(mock_client):
+    request = FuzzingRequest(
+        operation_id='post_various_locations',
+        tag='location',
+        path_id='path',
+        query='a',
+        form='b',
+        header='c',
+    )
+
+    request.send()
+
+    assert request.json() == {
+        'method': 'POST',
+        'path': '/location/path',
+        'query': {
+            'query': 'a',
+        },
+        'formData': {
+            'form': 'b',
+        },
+        'header': {
+            'header': 'c',
+        },
+    }
+    assert str(request) == (
+        'curl -X POST http://localhost:5000/location/path?query=a '
+        '--data \'form=b\' '
+        '-H \'header: c\''
+    )
+    assert repr(request) == 'FuzzingRequest(location.post_various_locations)'
+
+
 def test_send_basic_request(mock_client):
     request = FuzzingRequest(
         operation_id='get_no_inputs_required',

@@ -62,11 +62,10 @@ def is_in_result(expected_sequence, result):
     for sequence in result:
         formatted_sequence = []
         for request in sequence:
-            data = request.json()
-            data['tag'] = request.tag
-            data['id'] = request.operation_id
-
-            formatted_sequence.append(data)
+            formatted_sequence.append({
+                'tag': request.tag,
+                'id': request.operation_id,
+            })
 
         if formatted_sequence == expected_sequence:
             return True

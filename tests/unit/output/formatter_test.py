@@ -17,73 +17,70 @@ class TestFormatResults:
         with nicer_output():
             assert formatter.format_results([]) == ''
 
-    def test_basic(self):
+    def test_basic(self, mock_client):
         with nicer_output():
             assert uncolor(
                 formatter.format_results([
                     self.mock_result(
                         {
-                            'operation_id': 'one',
+                            'operation_id': 'get_one',
                             'id': 1,
                         },
                         test_results={
                             'IDORPlugin': True,
                         },
+                        client=mock_client,
                     ),
                 ]),
             ) == textwrap.dedent("""
                 Test Failures
-                test.one [IDORPlugin]
+                test.get_one [IDORPlugin]
                 Request Sequence:
                 [
-                  {
-                    "id": 1
-                  }
+                  "curl -X GET http://localhost:80/test/get_one?id=1"
                 ]
             """)[1:]
 
-    def test_multiple_failures(self):
+    def test_multiple_failures(self, mock_client):
         with nicer_output():
             assert uncolor(
                 formatter.format_results([
                     self.mock_result(
                         {
-                            'operation_id': 'one',
+                            'operation_id': 'post_one',
                             'id': 1,
                         },
                         test_results={
                             'IDORPlugin': True,
                         },
+                        client=mock_client,
                     ),
                     self.mock_result(
                         {
-                            'operation_id': 'two',
+                            'operation_id': 'get_two',
                         },
                         {
-                            'operation_id': 'one',
+                            'operation_id': 'post_one',
                             'id': 2,
                         },
                         test_results={
                             'IDORPlugin': True,
                         },
+                        client=mock_client,
                     ),
                 ]),
             ) == textwrap.dedent("""
                 Test Failures
-                test.one [IDORPlugin]
+                test.post_one [IDORPlugin]
                 Request Sequence:
                 [
-                  {
-                    "id": 1
-                  }
+                  "curl -X POST http://localhost:80/test/post_one --data 'id=1'"
                 ]
-                test.one [IDORPlugin]
+                test.post_one [IDORPlugin]
                 Request Sequence:
                 [
-                  {},
-                  {
-                    "id": 2
-                  }
+                  "curl -X GET http://localhost:80/test/get_two",
+                  "curl -X POST http://localhost:80/test/post_one --data 'id=2'"
                 ]
             """)[1:]
 
@@ -105,37 +102,46 @@ class TestFormatResults:
                 hi
             """)[1:]
 
-    def test_logging_output(self):
+    def test_logging_output(self, mock_client):
         result = self.mock_result(
             {
-                'operation_id': 'one',
+                'operation_id': 'get_one',
             },
             test_results={
                 'IDORPlugin': True,
             },
+            client=mock_client,
         )
         result.log_output = 'hello'
 
         with nicer_output():
             assert uncolor(formatter.format_results([result])) == textwrap.dedent("""
                 Test Failures
-                test.one [IDORPlugin]
+                test.get_one [IDORPlugin]
                 Request Sequence:
                 [
-                  {}
+                  "curl -X GET http://localhost:80/test/get_one"
                 ]
                 Captured log calls
                 hello
             """)[1:]
 
-    def mock_result(self, *cases, test_results=None):
-        request_sequence = [
-            FuzzingRequest(
-                tag='test',
-                **case
+    def mock_result(self, *cases, test_results=None, client=None):
+        request_sequence = []
+        for case in cases:
+            request_sequence.append(
+                FuzzingRequest(
+                    tag='test',
+                    **case,
+                ),
             )
-            for case in cases
-        ]
+
+            if client:
+                setattr(
+                    client.test,
+                    case['operation_id'],
+                    self.mock_client_properties(**case),
+                )
 
         result = FuzzingResult(request_sequence)
         result.responses = ResponseSequence()
@@ -143,6 +149,34 @@ class TestFormatResults:
             result.responses.test_results = test_results
 
         return result
+
+    @pytest.fixture(autouse=True)
+    def mock_client(self):
+        with mock.patch(
+            'fuzzer_core.request.get_client',
+            return_value=mock.Mock(),
+        ) as m:
+            yield m()
+
+    def mock_client_properties(self, operation_id, **kwargs):
+        output = mock.Mock()
+        output.swagger_spec.api_url = 'http://localhost:80/'
+        output.path_name = f'/test/{operation_id}'
+
+        output.http_method = 'get'
+        if operation_id.startswith('post_'):
+            output.http_method = 'post'
+
+        output.params = {}
+        for key in kwargs:
+            param = mock.Mock()
+            param.location = 'query'
+            if output.http_method == 'post':
+                param.location = 'formData'
+
+            output.params[key] = param
+
+        return output
 
 
 def test_format_warnings():

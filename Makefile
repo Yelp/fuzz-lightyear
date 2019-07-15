@@ -1,6 +1,10 @@
 development:
 	tox -e venv
 
+.PHONY: test
+test:
+	tox
+
 .PHONY: clean
 clean:
 	find -name '*.pyc' -delete
@@ -13,4 +17,4 @@ purge:
 
 .PHONY: vulnerable_app
 vulnerable_app:
-	python -m testing.vulnerable_app
+	FLASK_ENV='development' python -m testing.vulnerable_app
