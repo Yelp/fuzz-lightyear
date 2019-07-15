@@ -20,6 +20,8 @@ setup(
         'security',
         'swagger',
     ],
+    # Remember to update requirements-minimal.txt when making changes
+    # to this list.
     install_requires=[
         'bravado',
         'cached-property',
