@@ -4,7 +4,6 @@ import os
 
 
 def parse_args(argv=None):
-    # TODO: host/port
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-v',

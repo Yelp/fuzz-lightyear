@@ -100,7 +100,6 @@ def _format_result(result: FuzzingResult) -> Tuple[str, str]:
             ),
             request_json_dump=json.dumps(
                 [
-                    # TODO: fix. This needs a mock_client for testing.
                     str(request)
                     for request in result.requests
                 ],
