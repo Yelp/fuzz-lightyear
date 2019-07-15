@@ -1,10 +1,12 @@
 import sys
+import textwrap
 import traceback
 from collections import Counter
 from datetime import datetime
 
 from . import formatter
 from ..result import FuzzingResult
+from ..settings import get_settings
 from .color import AnsiColor
 from .color import colorize
 from .logging import log
@@ -19,6 +21,7 @@ class ResultFormatter:
                 AnsiColor.BOLD,
             ),
         )
+        print(_get_info())
 
         self.current_tag = None
 
@@ -40,7 +43,7 @@ class ResultFormatter:
         # Show status as tests pass/fail.
         is_successful = False
         if (
-            result.responses and
+            len(result.responses) == len(result.requests) and
             not any(result.responses.test_results.values())
         ):
             is_successful = True
@@ -54,9 +57,11 @@ class ResultFormatter:
             self.stats['failure'] += 1
 
             result.log_output = log.stream.getvalue()
-            log.clear_stream()
 
             self.vulnerable_results.append(result)
+
+        # Clear log after every run.
+        log.clear_stream()
 
         # Aggregate warnings for summary output.
         self.warnings.append(
@@ -72,6 +77,9 @@ class ResultFormatter:
         result: FuzzingResult,
         e: BaseException,
     ):
+        # If there's an exception, it means that the first request failed after
+        # a sequence of successful requests.
+        parameters = result.requests[len(result.responses.responses) - 1].fuzzed_input
         result.exception_info = {
             'name': e.__class__.__name__,
             'traceback': ''.join(
@@ -79,6 +87,7 @@ class ResultFormatter:
                     *sys.exc_info(),
                 ),
             ).strip(),
+            'parameters': parameters,
         }
 
     def show_results(self):
@@ -97,3 +106,9 @@ class ResultFormatter:
                 datetime.now() - self.start_time,
             ),
         )
+
+
+def _get_info():
+    return textwrap.dedent(f"""
+        Hypothesis Seed: {get_settings().seed}
+    """)[1:]

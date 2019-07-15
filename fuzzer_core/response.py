@@ -18,6 +18,9 @@ class ResponseSequence:
         # Result of analysis done on responses received
         self.test_results = {}  # type: Dict[str, bool]
 
+    def __len__(self):
+        return len(self.responses)
+
     def add_response(self, response):
         self.responses.append(response)
         for key in dir(response):

@@ -1,4 +1,5 @@
 import json
+import logging
 import subprocess
 import sys
 import textwrap
@@ -11,6 +12,7 @@ from typing import Tuple
 from ..result import FuzzingResult
 from .color import AnsiColor
 from .color import colorize
+from .logging import log
 
 
 def format_results(
@@ -65,7 +67,22 @@ def format_results(
 
 def _format_result(result: FuzzingResult) -> Tuple[str, str]:
     if result.exception_info:
-        return result.exception_info['name'], result.exception_info['traceback']
+        info = [
+            result.exception_info['traceback'],
+        ]
+
+        if log.level <= logging.INFO:
+            info = [
+                'Input:',
+                json.dumps(result.exception_info['parameters'], indent=2),
+                '',
+                *info,
+            ]
+
+        return (
+            result.exception_info['name'],
+            '\n'.join(info),
+        )
 
     return (
         ','.join([

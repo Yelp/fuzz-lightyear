@@ -6,8 +6,6 @@ from typing import Optional
 import requests
 import simplejson
 from bravado.exception import HTTPError
-from bravado_core.exception import SwaggerMappingError              # type: ignore
-from jsonschema.exceptions import ValidationError                   # type: ignore
 from swagger_spec_validator.common import SwaggerValidationError    # type: ignore
 
 from .client import get_client
@@ -17,6 +15,7 @@ from .output.interface import ResultFormatter
 from .output.logging import log
 from .output.util import print_error
 from .runner import run_sequence
+from .settings import get_settings
 from .usage import parse_args
 
 
@@ -34,19 +33,17 @@ def main(argv: Optional[List[Any]] = None):
     for fixture_path in args.fixture:
         import_fixtures(fixture_path)
 
+    if args.seed:
+        get_settings().seed = args.seed
+
     # Run
     outputter = ResultFormatter()
     for result in generate_sequences(
         n=args.iterations,
     ):
         try:
-            result.responses = run_sequence(result.requests)
-        except (
-            HTTPError,
-            SwaggerMappingError,
-            SwaggerValidationError,
-            ValidationError,
-        ) as e:
+            run_sequence(result.requests, result.responses)
+        except Exception as e:
             outputter.record_exception(result, e)
 
         outputter.record_result(result)

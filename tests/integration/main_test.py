@@ -1,5 +1,3 @@
-import pytest
-
 from fuzzer_core import main
 from testing.mock_server import PORT
 from testing.mock_server import URL
@@ -9,9 +7,12 @@ class TestMain:
     def test_returns_one_if_failure(self):
         assert main.main([URL])
 
-    @pytest.mark.skip(reason='Need to implement fuzzing.')
     def test_success(self):
-        assert not main.main([
+        # TODO: This is more of a smoke test right now. It flags,
+        #       because it identifies IDOR, but this also masks other errors.
+        #       We should address this again, when we implement whitelist
+        #       functionality.
+        assert main.main([
             '{}/schema'.format(URL),
             '-f', 'test_data/nested',
         ])

@@ -76,6 +76,9 @@ def _fuzz_string(
 ) -> SearchStrategy:
     # TODO: Handle a bunch of swagger string formats.
     # https://swagger.io/docs/specification/data-models/data-types/#string
+    if parameter.get('required', False):
+        return st.text(min_size=1)
+
     return st.text()
 
 

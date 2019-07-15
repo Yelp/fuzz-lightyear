@@ -28,7 +28,10 @@ def parse_args(argv=None):
     )
     parser.add_argument(
         '--schema',
-        help='Path to local swagger schema.',
+        help=(
+            'Path to local swagger schema. If provided, this overrides the'
+            'swagger file found at the URL.'
+        ),
         type=_is_valid_schema,
     )
 
@@ -39,6 +42,12 @@ def parse_args(argv=None):
         default=[],
         help='Path to custom specified fixtures.',
         type=_is_valid_path,
+    )
+
+    parser.add_argument(
+        '--seed',
+        type=int,
+        help='Specify seed for generation of random output.',
     )
 
     return parser.parse_args(argv)
