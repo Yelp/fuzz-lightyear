@@ -35,22 +35,6 @@ def test_valid_request_skip_idor(mock_client):
     assert responses.test_results == {}
 
 
-def test_valid_request_without_idor(mock_client):
-    responses = run_sequence(
-        [
-            FuzzingRequest(
-                tag='basic',
-                operation_id='get_public_listing',
-                id=1,
-            ),
-        ],
-        ResponseSequence(),
-    )
-
-    assert responses.data['value'] == '1'
-    assert not responses.test_results['IDORPlugin']
-
-
 def test_valid_request_with_idor(mock_client):
     responses = run_sequence(
         [

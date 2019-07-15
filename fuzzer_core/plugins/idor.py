@@ -30,12 +30,9 @@ class IDORPlugin(BasePlugin):
     ) -> bool:
         last_request = request_sequence[-1]
         try:
-            response = last_request.send(
+            last_request.send(
                 auth=get_abstraction().get_attacker_session(),
             )
-
-            if response == response_sequence[-1]:
-                return False
 
             return True
         except (HTTPError, SwaggerMappingError, ValidationError):
