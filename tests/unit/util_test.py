@@ -1,4 +1,4 @@
-from fuzzer_core.util import cached_result
+from fuzz_lightyear.util import cached_result
 
 
 def test_cached_result():

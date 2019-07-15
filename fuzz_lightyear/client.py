@@ -4,7 +4,7 @@ from typing import Optional
 
 from bravado.client import SwaggerClient
 
-from fuzzer_core.util import cached_result
+from fuzz_lightyear.util import cached_result
 
 
 @cached_result

@@ -1,9 +1,9 @@
 import pytest
 from bravado.exception import HTTPError
 
-from fuzzer_core.request import FuzzingRequest
-from fuzzer_core.response import ResponseSequence
-from fuzzer_core.runner import run_sequence
+from fuzz_lightyear.request import FuzzingRequest
+from fuzz_lightyear.response import ResponseSequence
+from fuzz_lightyear.runner import run_sequence
 
 
 def test_invalid_request(mock_client):

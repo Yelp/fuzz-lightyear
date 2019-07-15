@@ -1,10 +1,10 @@
 import pytest
 
-from fuzzer_core.client import get_client
-from fuzzer_core.datastore import get_user_defined_mapping
-from fuzzer_core.plugins import get_enabled_plugins
-from fuzzer_core.request import get_victim_session_factory
-from fuzzer_core.supplements.abstraction import get_abstraction
+from fuzz_lightyear.client import get_client
+from fuzz_lightyear.datastore import get_user_defined_mapping
+from fuzz_lightyear.plugins import get_enabled_plugins
+from fuzz_lightyear.request import get_victim_session_factory
+from fuzz_lightyear.supplements.abstraction import get_abstraction
 
 
 @pytest.fixture(autouse=True)

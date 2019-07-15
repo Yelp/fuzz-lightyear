@@ -1,8 +1,8 @@
 from functools import lru_cache
 from typing import Callable
 
-from fuzzer_core.client import get_client
-from fuzzer_core.exceptions import ConflictingHandlers
+from fuzz_lightyear.client import get_client
+from fuzz_lightyear.exceptions import ConflictingHandlers
 
 
 @lru_cache(maxsize=1)

@@ -4,9 +4,9 @@ import pytest
 from bravado.exception import HTTPError
 from swagger_spec_validator.common import SwaggerValidationError
 
-import fuzzer_core
-from fuzzer_core.fuzzer import fuzz_parameters
-from fuzzer_core.request import FuzzingRequest
+import fuzz_lightyear
+from fuzz_lightyear.fuzzer import fuzz_parameters
+from fuzz_lightyear.request import FuzzingRequest
 
 
 def test_fuzz_enum(mock_client):
@@ -30,7 +30,7 @@ def test_fuzz_enum(mock_client):
 def test_predefined_factory(mock_client):
     def factory():
         return 1
-    fuzzer_core.register_factory('id')(factory)
+    fuzz_lightyear.register_factory('id')(factory)
 
     request = FuzzingRequest(
         operation_id='get_public_listing',

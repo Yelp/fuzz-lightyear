@@ -1,4 +1,4 @@
-from fuzzer_core import main
+from fuzz_lightyear import main
 from testing.mock_server import PORT
 from testing.mock_server import URL
 

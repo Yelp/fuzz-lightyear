@@ -1,8 +1,8 @@
 import pytest
 
-import fuzzer_core
-from fuzzer_core.datastore import get_user_defined_mapping
-from fuzzer_core.exceptions import ConflictingKeys
+import fuzz_lightyear
+from fuzz_lightyear.datastore import get_user_defined_mapping
+from fuzz_lightyear.exceptions import ConflictingKeys
 
 
 def test_register_single_key():
@@ -47,9 +47,9 @@ def test_basic():
 class TestInjectVariables:
 
     def setup(self):
-        fuzzer_core.register_factory('nested_dependency')(self.nested_dependency)
-        fuzzer_core.register_factory('caller')(self.caller)
-        fuzzer_core.register_factory('dependency')(self.dependency)
+        fuzz_lightyear.register_factory('nested_dependency')(self.nested_dependency)
+        fuzz_lightyear.register_factory('caller')(self.caller)
+        fuzz_lightyear.register_factory('dependency')(self.dependency)
 
     def test_uses_default(self):
         assert get_user_defined_mapping()['caller']() == 2
@@ -61,7 +61,7 @@ class TestInjectVariables:
     def test_throws_error_when_no_default(self):
         def foobar(no_default):
             pass
-        fuzzer_core.register_factory('a')(foobar)
+        fuzz_lightyear.register_factory('a')(foobar)
 
         with pytest.raises(TypeError):
             get_user_defined_mapping()['a']()
@@ -86,5 +86,5 @@ def register_function(key, return_value=None):
     def foobar():
         return return_value
 
-    fuzzer_core.register_factory(key)(foobar)
+    fuzz_lightyear.register_factory(key)(foobar)
     return foobar

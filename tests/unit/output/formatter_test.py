@@ -5,10 +5,10 @@ from unittest import mock
 
 import pytest
 
-from fuzzer_core.output import formatter
-from fuzzer_core.request import FuzzingRequest
-from fuzzer_core.response import ResponseSequence
-from fuzzer_core.result import FuzzingResult
+from fuzz_lightyear.output import formatter
+from fuzz_lightyear.request import FuzzingRequest
+from fuzz_lightyear.response import ResponseSequence
+from fuzz_lightyear.result import FuzzingResult
 from testing.util import uncolor
 
 
@@ -153,7 +153,7 @@ class TestFormatResults:
     @pytest.fixture(autouse=True)
     def mock_client(self):
         with mock.patch(
-            'fuzzer_core.request.get_client',
+            'fuzz_lightyear.request.get_client',
             return_value=mock.Mock(),
         ) as m:
             yield m()

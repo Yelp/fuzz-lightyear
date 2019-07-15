@@ -1,7 +1,7 @@
 import pytest
 
-import fuzzer_core
-from fuzzer_core.client import get_client
+import fuzz_lightyear
+from fuzz_lightyear.client import get_client
 from testing import mock_server as mock_server_module
 
 
@@ -18,7 +18,7 @@ def mock_schema(mock_server):
 
 @pytest.fixture
 def mock_client(mock_schema):
-    fuzzer_core.victim_account(
+    fuzz_lightyear.victim_account(
         lambda: {
             '_request_options': {
                 'headers': {
@@ -27,7 +27,7 @@ def mock_client(mock_schema):
             },
         },
     )
-    fuzzer_core.attacker_account(
+    fuzz_lightyear.attacker_account(
         lambda: {
             '_request_options': {
                 'headers': {

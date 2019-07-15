@@ -11,7 +11,7 @@ from .abstraction import get_abstraction
 def victim_account(func):
     """
     Example Usage:
-        >>> @fuzzer_core.victim_account
+        >>> @fuzz_lightyear.victim_account
         ... def victim_factory():
         ...     return {
         ...         'headers': {

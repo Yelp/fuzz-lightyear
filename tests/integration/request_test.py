@@ -1,7 +1,7 @@
 import pytest
 
-from fuzzer_core.request import FuzzingRequest
-from fuzzer_core.supplements.abstraction import get_abstraction
+from fuzz_lightyear.request import FuzzingRequest
+from fuzz_lightyear.supplements.abstraction import get_abstraction
 
 
 def test_json(mock_client):

@@ -1,7 +1,7 @@
-import fuzzer_core
+import fuzz_lightyear
 
 
-@fuzzer_core.attacker_account
+@fuzz_lightyear.attacker_account
 def attacker_account():
     return {
         '_request_options': {

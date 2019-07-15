@@ -64,7 +64,7 @@ logging.captureWarnings(True)
 # information during the normal process of this application.
 root_logger = get_logger()
 log = get_logger(
-    'fuzzer_core',
+    'fuzz_lightyear',
     format='[%(module)s:%(lineno)d]\t%(levelname)s\t%(message)s',
 
     propagate=False,

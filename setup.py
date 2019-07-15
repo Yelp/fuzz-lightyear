@@ -1,11 +1,11 @@
 from setuptools import find_packages
 from setuptools import setup
 
-from fuzzer_core import VERSION
+from fuzz_lightyear import VERSION
 
 
 setup(
-    name='fuzzer_core',
+    name='fuzz_lightyear',
     packages=find_packages(exclude=(['test*', 'tmp*'])),
     version=VERSION,
     description='Vulnerability Discovery through Stateful Swagger Fuzzing',
@@ -29,7 +29,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'fuzzer-core = fuzzer_core.main:main',
+            'fuzz-lightyear = fuzz_lightyear.main:main',
         ],
     },
     classifiers=[

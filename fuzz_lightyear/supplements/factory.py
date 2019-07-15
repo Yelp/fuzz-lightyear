@@ -11,8 +11,8 @@ and allow developers to configure their tests as necessary.
 """
 from functools import wraps
 
-from fuzzer_core.datastore import get_user_defined_mapping
-from fuzzer_core.exceptions import ConflictingKeys
+from fuzz_lightyear.datastore import get_user_defined_mapping
+from fuzz_lightyear.exceptions import ConflictingKeys
 
 
 def register_factory(keys):
@@ -20,26 +20,26 @@ def register_factory(keys):
     :type keys: str|iterable
 
     Basic Use:
-        >>> import fuzzer_core
-        >>> @fuzzer_core.register_factory('user_id')
+        >>> import fuzz_lightyear
+        >>> @fuzz_lightyear.register_factory('user_id')
         ... def create_user():
         ...     return 1
 
     Multiple Keys:
-        >>> @fuzzer_core.register_factory(['biz_id', 'business_id'])
+        >>> @fuzz_lightyear.register_factory(['biz_id', 'business_id'])
         ... def create_business():
         ...     return 1
         >>>
-        >>> @fuzzer_core.register_factory('biz_id, business_id')
+        >>> @fuzz_lightyear.register_factory('biz_id, business_id')
         ... def create_business():
         ...     return 1
 
     Dependency Injection:
-        >>> @fuzzer_core.register_factory('biz_id')
+        >>> @fuzz_lightyear.register_factory('biz_id')
         ... def create_business():
         ...     return 1
         >>>
-        >>> @fuzzer_core.register_factory('biz_user_id')
+        >>> @fuzz_lightyear.register_factory('biz_user_id')
         ... def create_biz_user(biz_id):
         ...     return 2
     """

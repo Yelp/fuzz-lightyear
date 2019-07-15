@@ -3,7 +3,7 @@ NOTE: We can't hardcode any length checks, because this is dependent on a
 ever growing test collection. Otherwise, it will make writing tests way more
 inconvenient than it needs to be.
 """
-from fuzzer_core.generator import generate_sequences
+from fuzz_lightyear.generator import generate_sequences
 
 
 def test_length_one(mock_client):

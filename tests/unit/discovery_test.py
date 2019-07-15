@@ -2,8 +2,8 @@ import os
 
 import pytest
 
-from fuzzer_core import discovery
-from fuzzer_core.supplements.abstraction import get_abstraction
+from fuzz_lightyear import discovery
+from fuzz_lightyear.supplements.abstraction import get_abstraction
 
 
 class TestImportFixture:

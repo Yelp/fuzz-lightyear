@@ -1,7 +1,7 @@
-import fuzzer_core
+import fuzz_lightyear
 
 
-@fuzzer_core.victim_account
+@fuzz_lightyear.victim_account
 def victim_account():
     return {
         '_request_options': {
