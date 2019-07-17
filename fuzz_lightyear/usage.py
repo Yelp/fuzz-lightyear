@@ -65,6 +65,15 @@ def parse_args(argv=None):
         help='Specifies a single test to run.',
     )
 
+    parser.add_argument(
+        '--ignore-exceptions',
+        action='store_true',
+        help=(
+            'Ignores all exceptions raised during fuzzing (aka. only fails when '
+            'vulnerabilities are found).'
+        ),
+    )
+
     return parser.parse_args(argv)
 
 

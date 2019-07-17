@@ -7,13 +7,29 @@ class TestMain:
     def test_returns_one_if_failure(self):
         assert main.main([URL])
 
-    def test_success(self):
+    def test_success(self, mock_client):
         # TODO: This is more of a smoke test right now. It flags,
         #       because it identifies IDOR, but this also masks other errors.
         #       We should address this again, when we implement whitelist
         #       functionality.
         assert main.main([
             '{}/schema'.format(URL),
+            '-f', 'test_data/nested',
+        ])
+
+    def test_ignore_exceptions_hides_exceptions(self, mock_client):
+        assert not main.main([
+            '{}/schema'.format(URL),
+            '-t', 'constant.get_will_throw_error',
+            '--ignore-exceptions',
+        ])
+
+    def test_ignore_exceptions_still_shows_vulnerabilities(self, mock_client):
+        assert main.main([
+            '{}/schema'.format(URL),
+            '-t', 'constant.get_will_throw_error',
+            '-t', 'basic.get_private_listing',
+            '--ignore-exceptions',
             '-f', 'test_data/nested',
         ])
 

@@ -45,7 +45,14 @@ def main(argv: Optional[List[Any]] = None):
         try:
             run_sequence(result.requests, result.responses)
         except Exception as e:
-            outputter.record_exception(result, e)
+            if (
+                args.ignore_exceptions and
+                isinstance(e, HTTPError)
+            ):
+                # This makes it look like a valid request sequence.
+                result.responses.responses = result.requests
+            else:
+                outputter.record_exception(result, e)
 
         outputter.record_result(result)
 
