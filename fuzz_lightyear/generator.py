@@ -7,11 +7,15 @@ from .request import FuzzingRequest
 from .result import FuzzingResult
 
 
-def generate_sequences(n: int) -> Iterator[FuzzingResult]:
+def generate_sequences(
+    n: int,
+    tests: Optional[List[str]] = None,
+) -> Iterator[FuzzingResult]:
     """
     We perform DFS to obtain these sequences, since we want nice output.
 
     :param n: max length of each sequence.
+    :param tests: specifies the tests we want to run.
     """
     # TODO: It would probably better if we can sort on ending operation
     #       (rather than starting operation), so that it's clearer for
@@ -22,6 +26,16 @@ def generate_sequences(n: int) -> Iterator[FuzzingResult]:
         for _ in range(n):
             good_sequences = []
             for sequence in _add_request_to_sequence(tag_group, last_results):
+                # TODO: We can probably modify this algorithm to be better.
+                if (
+                    tests and not
+                    (
+                        sequence[-1].id in tests or
+                        sequence[-1].tag in tests
+                    )
+                ):
+                    continue
+
                 result = FuzzingResult(sequence)
                 yield result
 

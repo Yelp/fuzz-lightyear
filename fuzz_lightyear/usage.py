@@ -56,6 +56,14 @@ def parse_args(argv=None):
         type=int,
         help='Specify seed for generation of random output.',
     )
+    parser.add_argument(
+        '-t',
+        '--test',
+        type=str,
+        default=[],
+        action='append',
+        help='Specifies a single test to run.',
+    )
 
     return parser.parse_args(argv)
 

@@ -40,6 +40,7 @@ def main(argv: Optional[List[Any]] = None):
     outputter = ResultFormatter()
     for result in generate_sequences(
         n=args.iterations,
+        tests=args.test,
     ):
         try:
             run_sequence(result.requests, result.responses)

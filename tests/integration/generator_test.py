@@ -23,6 +23,30 @@ def test_length_one(mock_client):
     )
 
 
+def test_supply_single_test(mock_client):
+    results = list(generate_sequences(1, ['basic.get_public_listing']))
+    assert len(results) == 1
+
+
+def test_supply_multiple_tests(mock_client):
+    results = list(
+        generate_sequences(
+            1,
+            [
+                'basic.get_public_listing',
+                'basic.get_private_listing',
+            ],
+        ),
+    )
+    assert len(results) == 2
+
+
+def test_supply_class_of_tests(mock_client):
+    results = list(generate_sequences(1, ['basic']))
+    for result in results:
+        assert result.requests[0].tag == 'basic'
+
+
 def test_length_three(mock_client):
     """
     We skip length=2 for now, since we only handle all permutations
