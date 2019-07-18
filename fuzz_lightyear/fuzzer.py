@@ -2,6 +2,7 @@ import json
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Tuple
 
 import hypothesis.strategies as st
 from hypothesis.searchstrategy.strategies import SearchStrategy
@@ -12,19 +13,38 @@ from .datastore import get_user_defined_mapping
 
 
 def fuzz_parameters(
-    parameters: List[Dict[str, Any]],
+    parameters: List[Tuple[str, Dict[str, Any]]],
 ) -> SearchStrategy:
-    return st.fixed_dictionaries({
-        parameter['name']: _fuzz_parameter(parameter)
-        for parameter in parameters
-    })
+    output = {}
+    for name, parameter in parameters:
+        parameter = _deref(parameter)
+
+        output[name] = _fuzz_parameter(parameter)
+
+    return st.fixed_dictionaries(output)
 
 
 def _fuzz_parameter(
     parameter: Dict[str, Any],
+    required: bool = False,
 ) -> SearchStrategy:
-    if '$ref' in parameter:
-        parameter = _get_model_definition(parameter['$ref'])
+    """
+    :param required: for object types, the required parameter is in a
+        separate array, rather than being attached to each parameter
+        object. This parameter allows objects to pass in this information.
+        e.g. {
+            'type': 'object',
+            'required': [
+                'name',
+            ],
+            'properties': {
+                'name': {
+                    'type': 'string',
+                },
+            },
+        }
+    """
+    parameter = _deref(parameter)
 
     if 'enum' in parameter:
         return st.sampled_from(parameter['enum'])
@@ -49,7 +69,7 @@ def _fuzz_parameter(
 
     # As per https://swagger.io/docs/specification/data-models/data-types,
     # there are only a limited set of data types.
-    mapping = {
+    mapping = {     # type: ignore # mypy doesn't like dynamic function signatures
         'string': _fuzz_string,
         'number': _fuzz_number,
         'integer': _fuzz_integer,
@@ -57,7 +77,7 @@ def _fuzz_parameter(
         'array': _fuzz_array,
         'object': _fuzz_object,
     }
-    strategy = mapping[_type](parameter)
+    strategy = mapping[_type](parameter, required=required)
 
     # NOTE: We don't currently support `nullable` values, so we use `None` as a
     #       proxy to exclude the parameter from the final dictionary.
@@ -65,7 +85,7 @@ def _fuzz_parameter(
         # `name` check is used here as a heuristic to determine whether in
         # recursive call (arrays).
         parameter.get('name') and
-        not parameter.get('required', False)
+        not parameter.get('required', required)
     ):
         return st.one_of(st.none(), strategy)
     return strategy
@@ -73,10 +93,11 @@ def _fuzz_parameter(
 
 def _fuzz_string(
     parameter: Dict[str, Any],
+    required: bool = False,
 ) -> SearchStrategy:
     # TODO: Handle a bunch of swagger string formats.
     # https://swagger.io/docs/specification/data-models/data-types/#string
-    if parameter.get('required', False):
+    if parameter.get('required', required):
         return st.text(min_size=1)
 
     return st.text()
@@ -84,6 +105,7 @@ def _fuzz_string(
 
 def _fuzz_number(
     parameter: Dict[str, Any],
+    **kwargs
 ) -> SearchStrategy:
     # TODO: Handle all the optional qualifiers for numbers.
     # https://swagger.io/docs/specification/data-models/data-types/#numbers
@@ -92,6 +114,7 @@ def _fuzz_number(
 
 def _fuzz_integer(
     parameter: Dict[str, Any],
+    **kwargs
 ) -> SearchStrategy:
     # TODO: Handle all the optional qualifiers for numbers.
     # https://swagger.io/docs/specification/data-models/data-types/#numbers
@@ -100,12 +123,14 @@ def _fuzz_integer(
 
 def _fuzz_boolean(
     parameter: Dict[str, Any],
+    **kwargs
 ) -> SearchStrategy:
     return st.booleans()
 
 
 def _fuzz_array(
     parameter: Dict[str, Any],
+    required: bool = False,
 ) -> SearchStrategy:
     item = parameter['items']
 
@@ -115,7 +140,7 @@ def _fuzz_array(
         min_size=parameter.get('minItems', 0),
         max_size=parameter.get('maxItems', None),
     )
-    if not parameter.get('required', False):
+    if not parameter.get('required', required):
         return st.one_of(st.none(), strategy)
 
     return strategy
@@ -123,12 +148,23 @@ def _fuzz_array(
 
 def _fuzz_object(
     parameter: Dict[str, Any],
+    **kwargs
 ) -> SearchStrategy:
     # TODO: Handle `additionalProperties`
     return st.fixed_dictionaries({
-        name: _fuzz_parameter(specification)
+        name: _fuzz_parameter(
+            specification,
+            name in parameter.get('required', []),
+        )
         for name, specification in parameter['properties'].items()
     })
+
+
+def _deref(parameter: Dict[str, Any]) -> Dict[str, Any]:
+    while '$ref' in parameter:
+        parameter = _get_model_definition(parameter['$ref'])
+
+    return parameter
 
 
 def _get_model_definition(

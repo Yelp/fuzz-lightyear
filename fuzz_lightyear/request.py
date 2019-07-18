@@ -94,8 +94,11 @@ class FuzzingRequest:
         if self.fuzzed_input is None:
             if not self._fuzzed_input_factory:
                 parameters = [
-                    get_param_type_spec(param)
-                    for param in self._swagger_operation.params.values()
+                    (name, get_param_type_spec(param),)
+
+                    # For 'body' parameters, bravado discards the name in the param spec
+                    # itself. Therefore, we need to pass the name in manually.
+                    for name, param in self._swagger_operation.params.items()
                 ]
 
                 self._fuzzed_input_factory = fuzz_parameters(parameters)

@@ -21,3 +21,11 @@ class VariousLocations(Resource):
     @api.expect(location_parser)
     def post(self, path_id):
         return string_model.output()
+
+
+@api.marshal_with(string_model.format)
+@ns.route('/')
+class BodyParameter(Resource):
+    @api.expect(string_model.format)
+    def post(self):
+        return string_model.output()

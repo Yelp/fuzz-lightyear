@@ -60,7 +60,7 @@ def test_booleans(mock_client, is_required):
     elif is_required is False:
         schema['required'] = False
 
-    factory = fuzz_parameters([schema])
+    factory = fuzz_parameters([('key', schema,)])
     if is_required:
         assert_randomness(factory, [True, False])
     else:
@@ -70,7 +70,8 @@ def test_booleans(mock_client, is_required):
 class TestArray:
 
     def test_basic(self, mock_client):
-        factory = fuzz_parameters([
+        factory = fuzz_parameters([(
+            'key',
             {
                 'name': 'key',
                 'type': 'array',
@@ -78,7 +79,7 @@ class TestArray:
                     'type': 'boolean',
                 },
             },
-        ])
+        )])
 
         for _ in range(10):
             item_list = factory.example()['key']
@@ -89,7 +90,8 @@ class TestArray:
                 assert item in [None, True, False]
 
     def test_nested(self, mock_client):
-        factory = fuzz_parameters([
+        factory = fuzz_parameters([(
+            'key',
             {
                 'name': 'key',
                 'type': 'array',
@@ -103,7 +105,7 @@ class TestArray:
                     },
                 },
             },
-        ])
+        )])
 
         for _ in range(10):
             for parent_list in factory.example()['key']:
@@ -118,22 +120,24 @@ class TestArray:
 class TestObject:
 
     def test_basic(self, mock_client):
-        factory = fuzz_parameters([
+        factory = fuzz_parameters([(
+            'key',
             {
                 'name': 'key',
                 'type': 'object',
-                'required': True,
+                'required': [
+                    'b',
+                ],
                 'properties': {
                     'a': {
                         'type': 'boolean',
                     },
                     'b': {
                         'type': 'boolean',
-                        'required': True,
                     },
                 },
             },
-        ])
+        )])
 
         for _ in range(10):
             obj = factory.example()['key']
@@ -145,11 +149,12 @@ class TestInvalidSchema:
 
     def test_no_type(self):
         with pytest.raises(SwaggerValidationError):
-            fuzz_parameters([
+            fuzz_parameters([(
+                'no_type_parameter',
                 {
                     'name': 'no_type_parameter',
                 },
-            ])
+            )])
 
 
 def assert_randomness(strategy, expected_values):

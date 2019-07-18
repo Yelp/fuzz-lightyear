@@ -42,8 +42,3 @@ location_parser.add_argument(
     'header',
     location='headers',
 )
-# TODO: This needs to be separate.
-# location_parser.add_argument(
-#     'json',
-#     location='json',
-# )

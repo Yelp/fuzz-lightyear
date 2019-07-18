@@ -9,7 +9,7 @@ string_model = Model(
     format=api.model(
         'BasicStringOutput',
         {
-            'value': fields.String,
+            'value': fields.String(required=True),
         },
     ),
     output=lambda: {

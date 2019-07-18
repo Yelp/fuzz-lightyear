@@ -58,16 +58,17 @@ def test_send_specified_auth(mock_client):
 
 
 @pytest.mark.parametrize(
-    'id',
+    'tag, id',
     (
-        'get_expect_primitives',
-        'get_expect_array',
-        'post_expect_array',
+        ('types', 'get_expect_primitives',),
+        ('types', 'get_expect_array',),
+        ('types', 'post_expect_array',),
+        ('location', 'post_body_parameter',),
     ),
 )
-def test_fuzzed_request(id, mock_client):
+def test_fuzzed_request(tag, id, mock_client):
     request = FuzzingRequest(
-        tag='types',
+        tag=tag,
         operation_id=id,
     )
     response = request.send()
