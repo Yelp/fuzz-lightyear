@@ -121,7 +121,7 @@ class FuzzingRequest:
             self.fuzzed_input = {
                 key: value
                 for key, value in self._fuzzed_input_factory.example().items()
-                if value
+                if value is not None
             }
 
         if not auth:
