@@ -45,9 +45,11 @@ def _fuzz_parameter(
         }
     """
     parameter = _deref(parameter)
+    required = parameter.get('required', required)
+    strategy = None
 
     if 'enum' in parameter:
-        return st.sampled_from(parameter['enum'])
+        strategy = st.sampled_from(parameter['enum'])
 
     _type = parameter.get('type')
     if not _type:
@@ -60,24 +62,29 @@ def _fuzz_parameter(
     if (
         # Since this is recursively called, this qualifier needs to be
         # here to support array definitions.
+        not strategy and
         parameter.get('name') and
         parameter['name'] in get_user_defined_mapping()
     ):
-        return st.builds(
+        strategy = st.builds(
             get_user_defined_mapping()[parameter['name']],
         )
 
-    # As per https://swagger.io/docs/specification/data-models/data-types,
-    # there are only a limited set of data types.
-    mapping = {     # type: ignore # mypy doesn't like dynamic function signatures
-        'string': _fuzz_string,
-        'number': _fuzz_number,
-        'integer': _fuzz_integer,
-        'boolean': _fuzz_boolean,
-        'array': _fuzz_array,
-        'object': _fuzz_object,
-    }
-    strategy = mapping[_type](parameter, required=required)
+    if not strategy:
+        # As per https://swagger.io/docs/specification/data-models/data-types,
+        # there are only a limited set of data types.
+        mapping = {     # type: ignore # mypy doesn't like dynamic function signatures
+            'string': _fuzz_string,
+            'number': _fuzz_number,
+            'integer': _fuzz_integer,
+            'boolean': _fuzz_boolean,
+            'array': _fuzz_array,
+            'object': _fuzz_object,
+
+            # TODO: handle `file` type
+            # https://swagger.io/docs/specification/2-0/file-upload/
+        }
+        strategy = mapping[_type](parameter, required=required)
 
     # NOTE: We don't currently support `nullable` values, so we use `None` as a
     #       proxy to exclude the parameter from the final dictionary.
@@ -85,7 +92,7 @@ def _fuzz_parameter(
         # `name` check is used here as a heuristic to determine whether in
         # recursive call (arrays).
         parameter.get('name') and
-        not parameter.get('required', required)
+        not required
     ):
         return st.one_of(st.none(), strategy)
     return strategy
@@ -133,14 +140,18 @@ def _fuzz_array(
     required: bool = False,
 ) -> SearchStrategy:
     item = parameter['items']
+    required = parameter.get('required', required)
 
     # TODO: Handle `oneOf`
     strategy = st.lists(
-        elements=_fuzz_parameter(item),
-        min_size=parameter.get('minItems', 0),
+        elements=_fuzz_parameter(item, required=required),
+        min_size=parameter.get(
+            'minItems',
+            0 if not required else 1,
+        ),
         max_size=parameter.get('maxItems', None),
     )
-    if not parameter.get('required', required):
+    if not required:
         return st.one_of(st.none(), strategy)
 
     return strategy

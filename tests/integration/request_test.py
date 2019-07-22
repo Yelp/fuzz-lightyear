@@ -2,6 +2,7 @@ import pytest
 
 from fuzz_lightyear.request import FuzzingRequest
 from fuzz_lightyear.supplements.abstraction import get_abstraction
+from testing.mock_server import URL
 
 
 def test_json(mock_client):
@@ -57,12 +58,26 @@ def test_send_specified_auth(mock_client):
     ).session == 'attacker_session'
 
 
+def test_str_encodes_array_query_parameters(mock_client):
+    request = FuzzingRequest(
+        operation_id='get_expect_array',
+        tag='types',
+        array=[
+            True,
+            False,
+        ],
+    )
+
+    assert str(request) == f'curl -X GET {URL}/types/array?array=True&array=False'
+
+
 @pytest.mark.parametrize(
     'tag, id',
     (
         ('types', 'get_expect_primitives',),
         ('types', 'get_expect_array',),
         ('types', 'post_expect_array',),
+        ('types', 'put_expect_array',),
         ('location', 'post_body_parameter',),
     ),
 )

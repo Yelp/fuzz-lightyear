@@ -16,3 +16,12 @@ string_array_parser.add_argument(
     type=str,
     location='form',
 )
+
+
+required_array_parser = reqparse.RequestParser()
+required_array_parser.add_argument(
+    'array',
+    action='append',
+    type=bool,
+    required=True,
+)

@@ -6,6 +6,7 @@ from flask_restplus import Resource
 from ..core.extensions import api
 from ..models.basic import string_model
 from ..parsers.arrays import boolean_array_parser
+from ..parsers.arrays import required_array_parser
 from ..parsers.arrays import string_array_parser
 from ..parsers.basic import primitive_query_parser
 from ..util import get_name
@@ -28,9 +29,12 @@ class ExpectArray(Resource):
     def post(self):
         return string_model.output()
 
+    @api.expect(required_array_parser)
+    def put(self):
+        return string_model.output()
 
-# TODO: I would do an `object` endpoint, but I don't know whether reqparse
-#       supports that.
+# TODO: I would do an `object` endpoint (that's different than a post body),
+#       but I don't know whether reqparse supports that.
 
 
 @api.marshal_with(string_model.format)

@@ -3,6 +3,7 @@ from functools import lru_cache
 from typing import Any
 from typing import Callable
 from typing import Dict
+from urllib.parse import quote_plus
 from urllib.parse import urlencode
 
 from bravado.client import CallableOperation
@@ -51,7 +52,7 @@ class FuzzingRequest:
                     continue
 
                 if value.location == 'path':
-                    path = path.replace(f'{{{key}}}', self.fuzzed_input[key])
+                    path = path.replace(f'{{{key}}}', str(self.fuzzed_input[key]))
                 else:
                     params[value.location][key] = self.fuzzed_input[key]
 
@@ -72,7 +73,15 @@ class FuzzingRequest:
         )
 
         if 'query' in data:
-            url += f'?{urlencode(data["query"])}'
+            url += '?'
+            for key, value in data['query'].items():
+                if not isinstance(value, list):
+                    # NOTE: value should not be a dict, for a query param.
+                    value = [value]
+                for v in value:
+                    url += f'{key}={quote_plus(str(v).encode())}&'
+
+            url = url.rstrip('&')
 
         args = []
         if 'formData' in data:
@@ -112,7 +121,7 @@ class FuzzingRequest:
         if not auth:
             auth = get_victim_session_factory()()
 
-        log.info(f'Fuzzing {self.id}')
+        log.info(str(self))
         return get_abstraction().request_method(
             operation_id=self.operation_id,
             tag=self.tag,
