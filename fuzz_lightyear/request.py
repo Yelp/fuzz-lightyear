@@ -102,13 +102,19 @@ class FuzzingRequest:
         # Empty dictionary means we're not sending parameters.
         if self.fuzzed_input is None:
             if not self._fuzzed_input_factory:
-                parameters = [
-                    (name, get_param_type_spec(param),)
+                parameters = []
+                for name, param in self._swagger_operation.params.items():
+                    specification = get_param_type_spec(param)
+                    if param.location == 'body':
+                        # For 'body' parameters, bravado discards information from the
+                        # param spec itself. We pass in the 'required' parameter in this
+                        # case.
+                        # For the 'name' argument (seeing that body parameters can be
+                        # named differently), we pass it in separately as it breaks the
+                        # swagger specification if we group it together.
+                        specification['required'] = param.required
 
-                    # For 'body' parameters, bravado discards the name in the param spec
-                    # itself. Therefore, we need to pass the name in manually.
-                    for name, param in self._swagger_operation.params.items()
-                ]
+                    parameters.append((name, specification,))
 
                 self._fuzzed_input_factory = fuzz_parameters(parameters)
 
