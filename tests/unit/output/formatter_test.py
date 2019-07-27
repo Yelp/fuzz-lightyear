@@ -9,6 +9,7 @@ from fuzz_lightyear.output import formatter
 from fuzz_lightyear.request import FuzzingRequest
 from fuzz_lightyear.response import ResponseSequence
 from fuzz_lightyear.result import FuzzingResult
+from fuzz_lightyear.supplements.abstraction import get_abstraction
 from testing.util import uncolor
 
 
@@ -152,11 +153,9 @@ class TestFormatResults:
 
     @pytest.fixture(autouse=True)
     def mock_client(self):
-        with mock.patch(
-            'fuzz_lightyear.request.get_client',
-            return_value=mock.Mock(),
-        ) as m:
-            yield m()
+        client = mock.Mock()
+        get_abstraction().client = client
+        yield client
 
     def mock_client_properties(self, operation_id, **kwargs):
         output = mock.Mock()

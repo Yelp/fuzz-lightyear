@@ -11,7 +11,6 @@ from bravado_core.param import get_param_type_spec      # type: ignore
 from cached_property import cached_property             # type: ignore
 from hypothesis.searchstrategy.strategies import SearchStrategy
 
-from .client import get_client
 from .fuzzer import fuzz_parameters
 from .output.logging import log
 from .output.util import print_warning
@@ -140,7 +139,7 @@ class FuzzingRequest:
     @cached_property
     def _swagger_operation(self) -> CallableOperation:
         return getattr(
-            getattr(get_client(), self.tag),
+            getattr(get_abstraction().client, self.tag),
             self.operation_id,
         )
 

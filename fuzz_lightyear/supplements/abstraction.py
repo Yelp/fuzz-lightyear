@@ -1,7 +1,8 @@
 from functools import lru_cache
 from typing import Callable
 
-from fuzz_lightyear.client import get_client
+from bravado.client import SwaggerClient
+
 from fuzz_lightyear.exceptions import ConflictingHandlers
 
 
@@ -20,6 +21,7 @@ class Abstraction:
         self.get_victim_session = None      # type: Callable
         self.get_attacker_session = None    # type: Callable
 
+        self.client = None                  # type: SwaggerClient
         self._request_method = None         # type: Callable
 
     @property
@@ -49,5 +51,8 @@ def default_request_method(operation_id, tag='default', *args, **kwargs):
     :type tag: str
     :param tag: Swagger tag
     """
-    future = getattr(getattr(get_client(), tag), operation_id)(*args, **kwargs)
+    future = getattr(
+        getattr(get_abstraction().client, tag),
+        operation_id,
+    )(*args, **kwargs)
     return future.result()

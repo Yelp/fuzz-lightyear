@@ -11,6 +11,6 @@ def main():
     configure_routes(app)
 
     app.run(
-        '0.0.0.0',
+        '127.0.0.1',
         port=int(os.environ.get('PORT', 5000)),
     )

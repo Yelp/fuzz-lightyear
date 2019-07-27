@@ -1,7 +1,8 @@
 import pytest
 
 import fuzz_lightyear
-from fuzz_lightyear.client import get_client
+from fuzz_lightyear.main import setup_client
+from fuzz_lightyear.supplements.abstraction import get_abstraction
 from testing import mock_server as mock_server_module
 
 
@@ -36,4 +37,6 @@ def mock_client(mock_schema):
             },
         },
     )
-    yield get_client(mock_server_module.URL, mock_schema)
+
+    setup_client(mock_server_module.URL, mock_schema)
+    yield get_abstraction().client

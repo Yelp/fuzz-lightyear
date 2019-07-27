@@ -5,10 +5,10 @@ from typing import Optional
 
 import requests
 import simplejson
+from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
 from swagger_spec_validator.common import SwaggerValidationError    # type: ignore
 
-from .client import get_client
 from .discovery import import_fixtures
 from .generator import generate_sequences
 from .output.interface import ResultFormatter
@@ -16,6 +16,7 @@ from .output.logging import log
 from .output.util import print_error
 from .runner import run_sequence
 from .settings import get_settings
+from .supplements.abstraction import get_abstraction
 from .usage import parse_args
 
 
@@ -68,8 +69,14 @@ def setup_client(
     """
     :returns: error message, if appropriate.
     """
+    if get_abstraction().client:
+        return None
+
     try:
-        get_client(url=url, schema=schema)
+        if not schema:
+            client = SwaggerClient.from_url(url)
+        else:
+            client = SwaggerClient.from_spec(schema, origin_url=url)
     except requests.exceptions.ConnectionError:
         return 'Unable to connect to server.'
     except (
@@ -83,4 +90,5 @@ def setup_client(
     except SwaggerValidationError:
         return 'Invalid swagger format.'
 
+    get_abstraction().client = client
     return None

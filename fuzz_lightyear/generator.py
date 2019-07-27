@@ -2,9 +2,9 @@ from typing import Iterator
 from typing import List
 from typing import Optional
 
-from .client import get_client
 from .request import FuzzingRequest
 from .result import FuzzingResult
+from .supplements.abstraction import get_abstraction
 
 
 def generate_sequences(
@@ -20,7 +20,7 @@ def generate_sequences(
     # TODO: It would probably better if we can sort on ending operation
     #       (rather than starting operation), so that it's clearer for
     #       output.
-    client = get_client()
+    client = get_abstraction().client
     for tag_group in dir(client):
         last_results = []   # type: List
         for _ in range(n):
@@ -49,7 +49,7 @@ def _add_request_to_sequence(
     tag_group: str,
     seed: Optional[List[List[FuzzingRequest]]] = None,
 ) -> List[List[FuzzingRequest]]:
-    client = get_client()
+    client = get_abstraction().client
 
     if not seed:
         return [
@@ -81,7 +81,7 @@ def _generate_requests(tag_group: str) -> Iterator[FuzzingRequest]:
     """
     Generates all possible requests based on the client's Swagger specification.
     """
-    client = get_client()
+    client = get_abstraction().client
     for operation_id in dir(getattr(client, tag_group)):
         yield FuzzingRequest(
             operation_id=operation_id,

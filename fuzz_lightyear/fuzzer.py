@@ -8,8 +8,8 @@ import hypothesis.strategies as st
 from hypothesis.searchstrategy.strategies import SearchStrategy
 from swagger_spec_validator.common import SwaggerValidationError    # type: ignore
 
-from .client import get_client
 from .datastore import get_user_defined_mapping
+from .supplements.abstraction import get_abstraction
 
 
 def fuzz_parameters(
@@ -187,6 +187,6 @@ def _get_model_definition(
     # TODO: Handle multiple files?
     try:
         model_name = reference.split('/')[-1]
-        return get_client().swagger_spec.definitions[model_name]._model_spec
+        return get_abstraction().client.swagger_spec.definitions[model_name]._model_spec
     except (IndexError, KeyError):  # pragma: no cover
         raise SwaggerValidationError(f'Failed to get model: {reference}')
