@@ -5,6 +5,7 @@ different accounts (victim and attacker), so that we can check to see
 whether the attacker is able to do actions that should only be limited
 to the victim.
 """
+from ..datastore import inject_user_defined_variables
 from .abstraction import get_abstraction
 
 
@@ -19,10 +20,10 @@ def victim_account(func):
         ...         },
         ...     }
     """
-    get_abstraction().get_victim_session = func
+    get_abstraction().get_victim_session = inject_user_defined_variables(func)
     return func
 
 
 def attacker_account(func):
-    get_abstraction().get_attacker_session = func
+    get_abstraction().get_attacker_session = inject_user_defined_variables(func)
     return func

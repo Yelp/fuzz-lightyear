@@ -9,9 +9,10 @@ In order to address this issue, we need to supplement our tests with
 an ability to create adhoc resources directly. These functions support this,
 and allow developers to configure their tests as necessary.
 """
-from functools import wraps
+from typing import Callable
 
 from fuzz_lightyear.datastore import get_user_defined_mapping
+from fuzz_lightyear.datastore import inject_user_defined_variables
 from fuzz_lightyear.exceptions import ConflictingKeys
 
 
@@ -49,17 +50,10 @@ def register_factory(keys):
             for key in keys.split(',')
         ]
 
-    def decorator(func):
+    def decorator(func: Callable) -> Callable:
+        wrapped = inject_user_defined_variables(func)
+
         mapping = get_user_defined_mapping()
-
-        @wraps(func)
-        def wrapped(*args, **kwargs):
-            for arg_name in func.__code__.co_varnames[len(args):]:
-                if arg_name not in kwargs and arg_name in mapping:
-                    kwargs[arg_name] = mapping[arg_name]()
-
-            return func(*args, **kwargs)
-
         for key in keys:
             if key in mapping:
                 raise ConflictingKeys(key)
