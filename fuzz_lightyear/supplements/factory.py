@@ -51,7 +51,7 @@ def register_factory(keys):
 
         >>> @fuzz_lightyear.register_factory('biz_id')
         ... def create_business(_type_hint):
-        ...     if _type_hint == 'str':
+        ...     if _type_hint == 'string':
         ...         return '1'
         ...     return 1
     """
