@@ -43,6 +43,17 @@ def register_factory(keys):
         >>> @fuzz_lightyear.register_factory('biz_user_id')
         ... def create_biz_user(biz_id):
         ...     return 2
+
+    Type Hinting:
+        NOTE: hypothesis has an ability to do this through type inference.
+              However, this requires codebases to be type-hinted, and this
+              isn't very compatible with many legacy codebases.
+
+        >>> @fuzz_lightyear.register_factory('biz_id')
+        ... def create_business(_type_hint):
+        ...     if _type_hint == 'str':
+        ...         return '1'
+        ...     return 1
     """
     if isinstance(keys, str):
         keys = [

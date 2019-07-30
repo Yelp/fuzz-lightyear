@@ -13,6 +13,7 @@ primitive_query_parser = reqparse.RequestParser()
 primitive_query_parser.add_argument(
     'string',
     type=str,
+    required=True,
 )
 primitive_query_parser.add_argument(
     'integer',

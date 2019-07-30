@@ -32,7 +32,20 @@ def inject_user_defined_variables(func: Callable) -> Callable:
 
     @wraps(func)
     def wrapped(*args, **kwargs) -> Any:
-        for arg_name in func.__code__.co_varnames[len(args):]:
+        # Removing metadata, if the function isn't asking for it.
+        # This is done *before* injection of user defined factories, so that users
+        # can override metadata, if absolutely necessary.
+        #
+        # Furthermore, metadata is prefixed with `_`, to avoid any potential
+        # name collisions with the swagger specification.
+        expected_kwargs = func.__code__.co_varnames[len(args):]
+
+        # NOTE: We need to use a local copy, due to our mutation of the iteable.
+        for arg_name in list(kwargs.keys()):
+            if arg_name not in expected_kwargs:
+                kwargs.pop(arg_name)
+
+        for arg_name in expected_kwargs:
             if arg_name not in kwargs and arg_name in mapping:
                 kwargs[arg_name] = mapping[arg_name]()
 

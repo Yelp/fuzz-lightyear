@@ -32,23 +32,23 @@ class Abstraction:
         return default_request_method
 
     @request_method.setter
-    def request_method(self, func):
-        """
-        :type func: function
-        """
+    def request_method(self, func: Callable):
         if self._request_method:
             raise ConflictingHandlers('make_request')
 
         self._request_method = func
 
 
-def default_request_method(operation_id, tag='default', *args, **kwargs):
+def default_request_method(
+    operation_id: str,
+    tag: str = 'default',
+    *args,
+    **kwargs
+):
     """
-    :type operation_id: str
     :param operation_id: there's a unique operationId for each
         (tag, operation) in the Swagger schema
 
-    :type tag: str
     :param tag: Swagger tag
     """
     future = getattr(
