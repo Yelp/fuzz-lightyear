@@ -32,6 +32,7 @@ class IDORPlugin(BasePlugin):
         try:
             last_request.send(
                 auth=get_abstraction().get_attacker_session(),
+                should_log=False,
             )
 
             return True

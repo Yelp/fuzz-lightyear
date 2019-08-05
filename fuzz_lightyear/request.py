@@ -3,6 +3,7 @@ from functools import lru_cache
 from typing import Any
 from typing import Callable
 from typing import Dict
+from typing import Optional
 from urllib.parse import quote_plus
 from urllib.parse import urlencode
 
@@ -92,11 +93,18 @@ class FuzzingRequest:
 
         return f'curl -X {data["method"]} {url} {" ".join(args)}'.rstrip()
 
-    def send(self, auth=None, *args, **kwargs) -> Any:
+    def send(
+        self,
+        auth: Optional[Dict[str, Any]] = None,
+        *args,
+        should_log: bool = True,
+        **kwargs
+    ) -> Any:
         """
-        :type auth: dict
         :param auth: parameters to pass to abstracted request method to specify
             the user making the request.
+        :param should_log: this should only be false, if we're sending a
+            duplicate request as part of a plugin.
         """
         # Empty dictionary means we're not sending parameters.
         if self.fuzzed_input is None:
@@ -126,7 +134,9 @@ class FuzzingRequest:
         if not auth:
             auth = get_victim_session_factory()()
 
-        log.info(str(self))
+        if should_log:
+            log.info(str(self))
+
         return get_abstraction().request_method(
             operation_id=self.operation_id,
             tag=self.tag,
