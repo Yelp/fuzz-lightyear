@@ -67,10 +67,7 @@ def _fuzz_parameter(
         parameter['name'] in get_user_defined_mapping()
     ):
         strategy = st.builds(
-            lambda: get_user_defined_mapping()[parameter['name']](
-                # Passing metadata about the parameter to the user-defined function
-                _type_hint=_type,
-            ),
+            lambda: get_user_defined_mapping()[parameter['name']](),
         )
 
     if not strategy:

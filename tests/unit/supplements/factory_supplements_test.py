@@ -2,7 +2,6 @@ import pytest
 
 import fuzz_lightyear
 from fuzz_lightyear.datastore import get_user_defined_mapping
-from fuzz_lightyear.datastore import inject_user_defined_variables
 from fuzz_lightyear.exceptions import ConflictingKeys
 
 
@@ -51,13 +50,12 @@ class TestInjectVariables:
         fuzz_lightyear.register_factory('nested_dependency')(self.nested_dependency)
         fuzz_lightyear.register_factory('caller')(self.caller)
         fuzz_lightyear.register_factory('dependency')(self.dependency)
-        fuzz_lightyear.register_factory('const_num')(self.returns_two)
 
     def test_uses_default(self):
         assert get_user_defined_mapping()['caller']() == 2
 
     def test_uses_provided_value_over_default(self):
-        # assert get_user_defined_mapping()['caller'](dependency=2) == 3
+        assert get_user_defined_mapping()['caller'](dependency=2) == 3
         assert get_user_defined_mapping()['caller'](3) == 4
 
     def test_throws_error_when_no_default(self):
@@ -71,18 +69,11 @@ class TestInjectVariables:
     def test_nested_dependency(self):
         assert get_user_defined_mapping()['nested_dependency']() == 4
 
-    def test_decorator_compatibility(self):
-        def decorator(func):
-            def wrapped(*args, const_num, **kwargs):
-                output = inject_user_defined_variables(func)(*args, **kwargs)
+    def test_re_registration(self):
+        function = fuzz_lightyear.register_factory('a')(self.dependency)
+        fuzz_lightyear.register_factory('b')(function)
 
-                return output + const_num
-
-            return wrapped
-
-        fuzz_lightyear.register_factory('decorator')(decorator(self.caller))
-
-        assert get_user_defined_mapping()['decorator']() == 1 + 1 + 2
+        assert get_user_defined_mapping()['b']() == 1
 
     @staticmethod
     def nested_dependency(caller):
@@ -96,9 +87,45 @@ class TestInjectVariables:
     def dependency():
         return 1
 
+
+def _custom_type(value):
+    """Used for TestTypeHinting."""
+    return value + 2
+
+
+class TestTypeHinting:
+    """Root level type casting is done in integration tests."""
+
+    def setup(self):
+        fuzz_lightyear.register_factory('dependency')(self.dependency)
+        fuzz_lightyear.register_factory('string_factory')(self.string_factory)
+        fuzz_lightyear.register_factory('integer_factory')(self.integer_factory)
+        fuzz_lightyear.register_factory('custom_factory')(self.custom_factory)
+
+    def test_type_hinting_for_nested_dependencies(self):
+        assert get_user_defined_mapping()['string_factory']() == 'test_string'
+        assert get_user_defined_mapping()['integer_factory']() == 2
+
+    def test_custom_type(self):
+        assert get_user_defined_mapping()['custom_factory']() == 3
+
     @staticmethod
-    def returns_two():
+    def dependency():
+        return 1
+
+    @staticmethod
+    def string_factory(dependency: str):
+        assert dependency == '1'
+        return 'test_string'
+
+    @staticmethod
+    def integer_factory(dependency: int):
+        assert dependency == 1
         return 2
+
+    @staticmethod
+    def custom_factory(dependency: _custom_type):
+        return dependency
 
 
 def register_function(key, return_value=None):
