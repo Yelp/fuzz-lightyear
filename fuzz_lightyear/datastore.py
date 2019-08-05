@@ -1,3 +1,4 @@
+import inspect
 from functools import lru_cache
 from functools import wraps
 from typing import Any
@@ -34,17 +35,7 @@ def inject_user_defined_variables(func: Callable) -> Callable:
     @wraps(func)
     def wrapped(*args, **kwargs) -> Any:
         expected_args = _get_injectable_variables(func)
-
-        # Removing metadata, if the function isn't asking for it.
-        # This is done *before* injection of user defined factories, so that users
-        # can override metadata, if absolutely necessary.
-        #
-        # Furthermore, metadata is prefixed with `_`, to avoid any potential
-        # name collisions with the swagger specification.
-        # NOTE: We need to use a local copy, due to our mutation of the iteable.
-        for arg_name in list(kwargs.keys()):
-            if arg_name.startswith('_') and arg_name not in expected_args:
-                kwargs.pop(arg_name)
+        type_annotations = inspect.getfullargspec(func).annotations
 
         for index, arg_name in enumerate(expected_args):
             if index < len(args):
@@ -54,7 +45,16 @@ def inject_user_defined_variables(func: Callable) -> Callable:
                 continue
 
             if arg_name not in kwargs and arg_name in mapping:
-                kwargs[arg_name] = mapping[arg_name]()
+                value = mapping[arg_name]()
+                if (
+                    arg_name in type_annotations and
+                    not isinstance(type_annotations[arg_name], type(List))
+                ):
+                    # If type annotations are used, use that to cast
+                    # values for input.
+                    value = type_annotations[arg_name](value)
+
+                kwargs[arg_name] = value
 
         return func(*args, **kwargs)
 

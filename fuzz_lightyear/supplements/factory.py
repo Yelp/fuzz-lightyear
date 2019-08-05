@@ -42,18 +42,28 @@ def register_factory(keys):
         >>>
         >>> @fuzz_lightyear.register_factory('biz_user_id')
         ... def create_biz_user(biz_id):
+        ...     assert biz_id == 1
         ...     return 2
 
     Type Hinting:
-        NOTE: hypothesis has an ability to do this through type inference.
-              However, this requires codebases to be type-hinted, and this
-              isn't very compatible with many legacy codebases.
+        This is free for root level factories, using the expected type based
+        on the swagger specification. For transitive use of factories, we
+        employ type-casting through type hints.
+
+        I'm aware that this means Python 3 will be required (and may not be
+        easy to implement for legacy codebases) but this is the easiest way
+        to implement this (without essentially implementing it ourselves).
+
+        For more edge cases and considerations, check out the test cases.
 
         >>> @fuzz_lightyear.register_factory('biz_id')
-        ... def create_business(_type_hint):
-        ...     if _type_hint == 'string':
-        ...         return '1'
-        ...     return 1
+        ... def create_business():
+        ...     return 3
+        >>>
+        >>> @fuzz_lightyear.register_factory('biz_user_id')
+        ... def create_biz_user(biz_id: str):
+        ...     assert biz_id == '3'
+        ...     return 4
     """
     if isinstance(keys, str):
         keys = [
