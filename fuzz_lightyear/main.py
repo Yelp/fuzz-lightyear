@@ -31,34 +31,15 @@ def main(argv: Optional[List[Any]] = None):
         print_error(message)
         return 1
 
-    for fixture_path in args.fixture:
-        import_fixtures(fixture_path)
-
-    if args.seed:
-        get_settings().seed = args.seed
-
-    # Run
-    outputter = ResultFormatter()
-    for result in generate_sequences(
-        n=args.iterations,
-        tests=args.test,
-    ):
-        try:
-            run_sequence(result.requests, result.responses)
-        except Exception as e:
-            if (
-                args.ignore_exceptions and
-                isinstance(e, HTTPError)
-            ):
-                # This makes it look like a valid request sequence.
-                result.responses.responses = result.requests
-            else:
-                outputter.record_exception(result, e)
-
-        outputter.record_result(result)
+    setup_fixtures(args.fixture)
+    outputter = run_tests(
+        *args.test,
+        iterations=args.iterations,
+        seed=args.seed,
+        ignore_exceptions=args.ignore_exceptions,
+    )
 
     outputter.show_results()
-
     return outputter.stats['failure'] != 0
 
 
@@ -92,3 +73,47 @@ def setup_client(
 
     get_abstraction().client = client
     return None
+
+
+def setup_fixtures(fixtures: List[str]):
+    for fixture_path in fixtures:
+        import_fixtures(fixture_path)
+
+
+def run_tests(
+    *tests: List[str],
+    iterations: int = 1,
+    seed: int = None,
+    ignore_exceptions: bool = False,
+) -> ResultFormatter:
+    """
+    :param tests: list of tests to run.
+        e.g. `basic.get_private_listing`
+
+    :param iterations: size of request sequence to generate.
+    :param seed: used for random generation of test input
+    :param ignore_exceptions: if True, ignores HTTP exceptions to requests.
+    """
+    if seed is not None:
+        get_settings().seed = seed
+
+    outputter = ResultFormatter()
+    for result in generate_sequences(
+        n=iterations,
+        tests=tests,
+    ):
+        try:
+            run_sequence(result.requests, result.responses)
+        except Exception as e:
+            if (
+                ignore_exceptions and
+                isinstance(e, HTTPError)
+            ):
+                # This makes it look like a valid request sequence.
+                result.responses.responses = result.requests
+            else:
+                outputter.record_exception(result, e)
+
+        outputter.record_result(result)
+
+    return outputter
