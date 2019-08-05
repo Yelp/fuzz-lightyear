@@ -3,8 +3,8 @@ from fuzz_lightyear.request import FuzzingRequest
 
 
 def test_type_hinting(mock_client):
-    def factory(_type_hint):
-        return '1' if _type_hint == 'string' else 1
+    def factory():
+        return 1
     fuzz_lightyear.register_factory('string, integer')(factory)
 
     request = FuzzingRequest(

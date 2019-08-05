@@ -2,6 +2,7 @@ import json
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Tuple
 
 import hypothesis.strategies as st
@@ -9,6 +10,7 @@ from hypothesis.searchstrategy.strategies import SearchStrategy
 from swagger_spec_validator.common import SwaggerValidationError    # type: ignore
 
 from .datastore import get_user_defined_mapping
+from .output.logging import log
 from .supplements.abstraction import get_abstraction
 
 
@@ -59,19 +61,8 @@ def _fuzz_parameter(
             ),
         )
 
-    if (
-        # Since this is recursively called, this qualifier needs to be
-        # here to support array definitions.
-        not strategy and
-        parameter.get('name') and
-        parameter['name'] in get_user_defined_mapping()
-    ):
-        strategy = st.builds(
-            lambda: get_user_defined_mapping()[parameter['name']](
-                # Passing metadata about the parameter to the user-defined function
-                _type_hint=_type,
-            ),
-        )
+    if not strategy:
+        strategy = _get_strategy_from_factory(_type, parameter.get('name'))
 
     if not strategy:
         # As per https://swagger.io/docs/specification/data-models/data-types,
@@ -165,13 +156,36 @@ def _fuzz_object(
     **kwargs
 ) -> SearchStrategy:
     # TODO: Handle `additionalProperties`
-    return st.fixed_dictionaries({
-        name: _fuzz_parameter(
+    output = {}
+    for name, specification in parameter['properties'].items():
+        specification = _deref(specification)
+
+        try:
+            strategy = _get_strategy_from_factory(specification['type'], name)
+        except KeyError:
+            log.error(
+                'Invalid swagger specification: expected \'type\'. Got \'{}\''.format(
+                    json.dumps(specification),
+                ),
+            )
+            raise
+
+        if strategy:
+            output[name] = strategy
+            continue
+
+        # `required` can be True, False, or an array of names that
+        # are required.
+        required = parameter.get('required', False)
+        if required and isinstance(required, list):
+            required = name in required
+
+        output[name] = _fuzz_parameter(
             specification,
-            name in parameter.get('required', []),
+            bool(required),
         )
-        for name, specification in parameter['properties'].items()
-    })
+
+    return st.fixed_dictionaries(output)
 
 
 def _deref(parameter: Dict[str, Any]) -> Dict[str, Any]:
@@ -179,6 +193,26 @@ def _deref(parameter: Dict[str, Any]) -> Dict[str, Any]:
         parameter = _get_model_definition(parameter['$ref'])
 
     return parameter
+
+
+def _get_strategy_from_factory(
+    expected_type: str,
+    name: Optional[str] = None,
+) -> Optional[SearchStrategy[Any]]:
+    if name not in get_user_defined_mapping():
+        return None
+
+    def type_cast():
+        """Use known types to cast output, if applicable."""
+        output = get_user_defined_mapping()[name]()
+        if expected_type == 'string':
+            return str(output)
+        elif expected_type == 'integer':
+            return int(output)
+
+        return output
+
+    return st.builds(type_cast)
 
 
 def _get_model_definition(

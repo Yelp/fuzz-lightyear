@@ -144,6 +144,20 @@ class TestObject:
             assert obj['a'] in [None, True, False]
             assert obj['b'] in [True, False]
 
+    def test_nested(self, mock_client):
+        def factory():
+            return 'test_value'
+        fuzz_lightyear.register_factory('session')(factory)
+
+        request = FuzzingRequest(
+            operation_id='post_nested_model',
+            tag='complex',
+        )
+
+        request.send()
+
+        assert request.fuzzed_input['payload']['info']['session'] == 'test_value'
+
 
 class TestInvalidSchema:
 
