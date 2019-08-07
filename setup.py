@@ -1,7 +1,22 @@
+import os
+
 from setuptools import find_packages
 from setuptools import setup
 
-from fuzz_lightyear import VERSION
+
+# We can't import fuzz_lightyear.version, since it pulls in all other
+# fuzz_lightyear modules. Therefore, we need to execute the file
+# directly.
+VERSION = None      # needed for flake8
+with open(
+    os.path.relpath(
+        os.path.join(
+            os.path.dirname(__file__),
+            'fuzz_lightyear/version.py',
+        ),
+    ),
+) as f:
+    exec(f.read())
 
 
 setup(

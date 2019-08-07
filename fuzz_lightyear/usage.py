@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 
-from fuzz_lightyear import VERSION
+from fuzz_lightyear.version import VERSION
 
 
 def parse_args(argv=None):
