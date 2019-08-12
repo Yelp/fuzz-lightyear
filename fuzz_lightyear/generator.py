@@ -1,6 +1,7 @@
 from typing import Iterator
 from typing import List
 from typing import Optional
+from typing import Tuple
 
 from .request import FuzzingRequest
 from .result import FuzzingResult
@@ -9,7 +10,7 @@ from .supplements.abstraction import get_abstraction
 
 def generate_sequences(
     n: int,
-    tests: Optional[List[str]] = None,
+    tests: Optional[Tuple[str, ...]] = None,
 ) -> Iterator[FuzzingResult]:
     """
     We perform DFS to obtain these sequences, since we want nice output.

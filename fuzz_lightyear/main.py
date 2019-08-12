@@ -81,7 +81,7 @@ def setup_fixtures(fixtures: List[str]):
 
 
 def run_tests(
-    *tests: List[str],
+    *tests: str,
     iterations: int = 1,
     seed: int = None,
     ignore_exceptions: bool = False,

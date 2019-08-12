@@ -5,6 +5,7 @@ from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import List
+from typing import Tuple
 
 
 @lru_cache(maxsize=1)
@@ -61,7 +62,7 @@ def inject_user_defined_variables(func: Callable) -> Callable:
     return wrapped
 
 
-def _get_injectable_variables(func: Callable) -> List[str]:
+def _get_injectable_variables(func: Callable) -> Tuple[str, ...]:
     """
     The easiest way to understand this is to see it as an example:
 
