@@ -71,6 +71,10 @@ def _add_request_to_sequence(
                 #       to the nature of microservices, we may need to rely on
                 #       factories for this.
                 #
+                #       This is further made complicated because we have no idea
+                #       whether a request should consume an existing resource,
+                #       use a factory, or fuzz a value.
+                #
                 #       This means, we need to do all permutations, because we
                 #       can't possibly know whether to eagerly prune.
                 output.append(new_sequence)
