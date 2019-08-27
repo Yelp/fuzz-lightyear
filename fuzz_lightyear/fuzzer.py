@@ -205,6 +205,10 @@ def _get_strategy_from_factory(
     def type_cast():
         """Use known types to cast output, if applicable."""
         output = get_user_defined_mapping()[name]()
+        if output is None:
+            # NOTE: We don't currently support `nullable` values, so we use `None`
+            #       as a proxy to exclude the parameter from the final dictionary.
+            return None
         if expected_type == 'string':
             return str(output)
         elif expected_type == 'integer':
