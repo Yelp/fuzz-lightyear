@@ -2,6 +2,7 @@ from collections import Counter
 
 import pytest
 from bravado.exception import HTTPError
+from bravado_core.exception import SwaggerMappingError
 from swagger_spec_validator.common import SwaggerValidationError
 
 import fuzz_lightyear
@@ -27,19 +28,35 @@ def test_fuzz_enum(mock_client):
     ]
 
 
-def test_predefined_factory(mock_client):
-    def factory():
-        return 1
-    fuzz_lightyear.register_factory('id')(factory)
+class TestPredefinedFactory:
+    def test_success(self, mock_client):
+        def factory():
+            return 1
+        fuzz_lightyear.register_factory('id')(factory)
 
-    request = FuzzingRequest(
-        operation_id='get_public_listing',
-        tag='basic',
-    )
+        request = FuzzingRequest(
+            operation_id='get_public_listing',
+            tag='basic',
+        )
 
-    request.send()
+        request.send()
 
-    assert request.fuzzed_input['id'] == 1
+        assert request.fuzzed_input['id'] == 1
+
+    def test_exclude_parameter(self, mock_client):
+        def factory():
+            return None
+        fuzz_lightyear.register_factory('id')(factory)
+
+        request = FuzzingRequest(
+            operation_id='get_public_listing',
+            tag='basic',
+        )
+
+        # id is a required parameter, so this will raise, if the id isn't
+        # provided (as expected)
+        with pytest.raises(SwaggerMappingError):
+            request.send()
 
 
 @pytest.mark.parametrize(
