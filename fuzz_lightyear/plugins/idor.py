@@ -7,6 +7,7 @@ from jsonschema.exceptions import ValidationError           # type: ignore
 
 from ..request import FuzzingRequest
 from ..supplements.abstraction import get_abstraction
+from ..supplements.exclusions import get_non_vulnerable_operations
 from .base import BasePlugin
 
 
@@ -18,6 +19,11 @@ class IDORPlugin(BasePlugin):
         response_sequence: List[Any],
     ) -> bool:
         last_request = request_sequence[-1]
+
+        # If an operation is marked is non-vulnerable, we don't need
+        # to check if it's vulnerable.
+        if last_request.operation_id in get_non_vulnerable_operations():
+            return False
 
         # If there are no parameters, then there's no way to
         # specify what victim resources to try to steal / modify.

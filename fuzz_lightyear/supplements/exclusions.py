@@ -26,7 +26,13 @@ from typing import Tuple
 from fuzz_lightyear.output.util import print_warning
 
 
+_get_non_vulnerable_operations: Callable[[], Dict[str, Optional[str]]] = lambda: {}
 _get_excluded_operations: Callable[[], Dict[str, Optional[str]]] = lambda: {}
+
+
+@lru_cache(maxsize=1)
+def get_non_vulnerable_operations() -> Dict[str, Optional[str]]:
+    return _get_non_vulnerable_operations()
 
 
 @lru_cache(maxsize=1)
@@ -51,7 +57,10 @@ def non_vulnerable_operations() -> Callable:
     """
     def decorator(func: Callable) -> Callable:
         wrapped = _get_formatted_operations(func)
-        # TODO: do something with this function
+
+        global _get_non_vulnerable_operations
+        _get_non_vulnerable_operations = wrapped
+
         return wrapped
 
     return decorator

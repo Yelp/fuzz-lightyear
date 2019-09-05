@@ -2,6 +2,7 @@ import pytest
 
 import fuzz_lightyear
 from fuzz_lightyear.supplements.exclusions import get_excluded_operations
+from fuzz_lightyear.supplements.exclusions import get_non_vulnerable_operations
 
 
 @pytest.mark.parametrize(
@@ -25,12 +26,27 @@ from fuzz_lightyear.supplements.exclusions import get_excluded_operations
         ),
     ],
 )
+@pytest.mark.parametrize(
+    'exclusions_decorator, get_exclusions_function',
+    [
+        (
+            fuzz_lightyear.exclusions.operations,
+            get_excluded_operations,
+        ),
+        (
+            fuzz_lightyear.exclusions.non_vulnerable_operations,
+            get_non_vulnerable_operations,
+        ),
+    ],
+)
 def test_exclude_operations_strings(
     excluded_operations_input,
     expected_exclusions,
+    exclusions_decorator,
+    get_exclusions_function,
 ):
     def foobar():
         return excluded_operations_input
 
-    fuzz_lightyear.exclusions.operations()(foobar)
-    assert get_excluded_operations() == expected_exclusions
+    exclusions_decorator()(foobar)
+    assert get_exclusions_function() == expected_exclusions
