@@ -7,7 +7,9 @@ import fuzz_lightyear
     'excluded_operations',
     [
         (['get_pets']),
-        (['get_pets', 'get_store_inventor']),
+        (['get_pets', 'get_store_inventory']),
+        (['pets.get_pets']),
+        (['pets.get_pets', 'store.get_store_inventory']),
     ],
 )
 def test_exclude_operations_strings(excluded_operations):

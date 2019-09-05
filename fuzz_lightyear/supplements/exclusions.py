@@ -33,6 +33,11 @@ def non_vulnerable_operations() -> Callable:
             >>> @fuzz_lightyear.exclusions.non_vulnerable_operations
             ... def b():
             ...     return ['get_pets', 'get_store_inventory']
+
+        Ignoring operations specified by "tag.operartion_id" in lists
+            >>> @fuzz_lightyear.exclusions.non_vulnerable_operations
+            ... def c():
+                    return ['pets.get_pets', 'store.get_store_inventory']
     """
     def decorator(func: Callable) -> Callable:
         wrapped = _get_formatted_operations(func)
@@ -51,6 +56,11 @@ def operations() -> Callable:
             >>> @fuzz_lightyear.exclusions.operations
             ... def b():
             ...     return ['get_pets', 'get_store_inventory']
+
+        Ignoring operations specified by "tag.operartion_id" in lists
+            >>> @fuzz_lightyear.exclusions.non_vulnerable_operations
+            ... def c():
+                    return ['pets.get_pets', 'store.get_store_inventory']
     """
     def decorator(func: Callable) -> Callable:
         wrapped = _get_formatted_operations(func)
@@ -82,7 +92,12 @@ def _get_formatted_operations(func: Callable) -> Callable[[], List[str]]:
 
 def _format_operation(operation) -> Optional[str]:
     if isinstance(operation, str):
-        return operation
+        num_dots = operation.count('.')
+        if num_dots == 0:
+            return (None, operation)
+        elif num_dots == 1:
+            tag, operation = operation.split('.')
+            return (tag, operation)
 
     print_warning(
         f'Failed to interpret {str(operation)} as an operation to exclude.',
