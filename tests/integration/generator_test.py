@@ -3,7 +3,23 @@ NOTE: We can't hardcode any length checks, because this is dependent on a
 ever growing test collection. Otherwise, it will make writing tests way more
 inconvenient than it needs to be.
 """
+import pytest
+
+import fuzz_lightyear
 from fuzz_lightyear.generator import generate_sequences
+
+
+@pytest.fixture
+def excluded_operations(request):
+    if not isinstance(request.param, list):
+        raise ValueError
+
+    def get_exclusions():
+        return request.param
+
+    fuzz_lightyear.exclusions.operations()(get_exclusions)
+    yield
+    fuzz_lightyear.exclusions.operations()(lambda: {})
 
 
 def test_length_one(mock_client):
@@ -15,6 +31,28 @@ def test_length_one(mock_client):
         [{
             'tag': 'basic',
             'id': 'get_public_listing',
+        }],
+        [
+            result.requests
+            for result in results
+        ],
+    )
+
+
+@pytest.mark.parametrize(
+    'excluded_operations',
+    [
+        (['constant.get_will_throw_error']),
+        (['get_will_throw_error']),
+    ],
+    indirect=['excluded_operations'],
+)
+def test_exclude_operations(mock_client, excluded_operations):
+    results = list(generate_sequences(1))
+    assert not is_in_result(
+        [{
+            'tag': 'constant',
+            'id': 'get_will_throw_error',
         }],
         [
             result.requests

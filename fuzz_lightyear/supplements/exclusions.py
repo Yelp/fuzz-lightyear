@@ -16,12 +16,22 @@ General exclusions exclude operations which should not be included in the
 fuzzing process. Operations that can go here can include operations which don't
 function correctly in testing environments.
 """
+from functools import lru_cache
 from functools import wraps
 from typing import Callable
-from typing import List
+from typing import Dict
 from typing import Optional
+from typing import Tuple
 
 from fuzz_lightyear.output.util import print_warning
+
+
+_get_excluded_operations: Callable[[], Dict[str, Optional[str]]] = lambda: {}
+
+
+@lru_cache(maxsize=1)
+def get_excluded_operations() -> Dict[str, Optional[str]]:
+    return _get_excluded_operations()
 
 
 def non_vulnerable_operations() -> Callable:
@@ -34,7 +44,7 @@ def non_vulnerable_operations() -> Callable:
             ... def b():
             ...     return ['get_pets', 'get_store_inventory']
 
-        Ignoring operations specified by "tag.operartion_id" in lists
+        Ignoring operations specified by "tag.operation_id" in lists
             >>> @fuzz_lightyear.exclusions.non_vulnerable_operations
             ... def c():
                     return ['pets.get_pets', 'store.get_store_inventory']
@@ -57,47 +67,51 @@ def operations() -> Callable:
             ... def b():
             ...     return ['get_pets', 'get_store_inventory']
 
-        Ignoring operations specified by "tag.operartion_id" in lists
+        Ignoring operations specified by "tag.operation_id" in lists
             >>> @fuzz_lightyear.exclusions.non_vulnerable_operations
             ... def c():
                     return ['pets.get_pets', 'store.get_store_inventory']
     """
     def decorator(func: Callable) -> Callable:
         wrapped = _get_formatted_operations(func)
-        # TODO: do something with this function
+
+        global _get_excluded_operations
+        _get_excluded_operations = wrapped
+
         return wrapped
 
     return decorator
 
 
-def _get_formatted_operations(func: Callable) -> Callable[[], List[str]]:
+def _get_formatted_operations(func: Callable) -> Callable[[], Dict[str, Optional[str]]]:
     """
     Given a user-defined function which specifies Swagger operations in a
-    supported form,, returns a function `f`. `f()` returns a list
-    of Swagger operation id strings.
+    supported form,, returns a function `f`. `f()` returns a mapping
+    from swagger operation id to its tag.
     """
     @wraps(func)
-    def wrapped() -> List[str]:
+    def wrapped() -> Dict[str, Optional[str]]:
         operations = func()
-        result = []
+        result = {}
         for operation in operations:
             formatted_operation = _format_operation(operation)
             if formatted_operation:
-                result.append(formatted_operation)
+                operation_id, tag = formatted_operation
+                result[operation_id] = tag
 
         return result
 
     return wrapped
 
 
-def _format_operation(operation) -> Optional[str]:
+def _format_operation(operation) -> Optional[Tuple[str, Optional[str]]]:
     if isinstance(operation, str):
         num_dots = operation.count('.')
         if num_dots == 0:
-            return (None, operation)
+            return (operation, None)
         elif num_dots == 1:
-            tag, operation = operation.split('.')
-            return (tag, operation)
+            tag, operation_id = operation.split('.')
+            return (operation_id, tag)
 
     print_warning(
         f'Failed to interpret {str(operation)} as an operation to exclude.',
