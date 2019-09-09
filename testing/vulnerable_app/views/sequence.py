@@ -8,6 +8,7 @@ from flask_restplus import Resource
 
 from ..core.extensions import api
 from ..models.basic import string_model
+from ..parsers.basic import number_query_parser
 from ..util import get_name
 
 
@@ -37,3 +38,18 @@ class AlphaTwo(Resource):
     @api.response(200, 'Success', model=str)
     def get(self):
         return alpha_two_parser.parse_args()['value']
+
+
+@ns.route('/bravo/one')
+class BravoOne(Resource):
+    @api.expect(number_query_parser)
+    def post(self):
+        return string_model.output()
+
+
+@ns.route('/bravo/two')
+class BravoTwo(Resource):
+    @api.expect(number_query_parser)
+    @api.response(200, 'Success', model=int)
+    def get(self):
+        return number_query_parser.parse_args()['id']
