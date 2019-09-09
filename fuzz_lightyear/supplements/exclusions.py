@@ -77,7 +77,7 @@ def operations() -> Callable:
             ...     return ['get_pets', 'get_store_inventory']
 
         Ignoring operations specified by "tag.operation_id" in lists
-            >>> @fuzz_lightyear.exclusions.non_vulnerable_operations
+            >>> @fuzz_lightyear.exclusions.operations
             ... def c():
                     return ['pets.get_pets', 'store.get_store_inventory']
     """
