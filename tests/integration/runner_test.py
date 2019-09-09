@@ -49,3 +49,23 @@ def test_valid_request_with_idor(mock_client):
 
     assert responses.data['session'] == 'victim_session'
     assert responses.test_results['IDORPlugin']
+
+
+def test_stateful_sequence(mock_client):
+    responses = run_sequence(
+        [
+            FuzzingRequest(
+                tag='sequence',
+                operation_id='post_alpha_one',
+            ),
+            FuzzingRequest(
+                tag='sequence',
+                operation_id='get_alpha_two',
+            ),
+        ],
+        ResponseSequence(),
+    )
+
+    # This value is returned from `post_alpha_one`. If they were
+    # independently fuzzed, it would not be this value.
+    assert responses.responses[-1] == 'ok'

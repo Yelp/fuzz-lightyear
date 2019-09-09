@@ -98,6 +98,7 @@ class FuzzingRequest:
         auth: Optional[Dict[str, Any]] = None,
         *args,
         should_log: bool = True,
+        data: Optional[Dict[str, Any]] = None,
         **kwargs
     ) -> Any:
         """
@@ -106,6 +107,9 @@ class FuzzingRequest:
         :param should_log: this should only be false, if we're sending a
             duplicate request as part of a plugin.
         """
+        if not data:
+            data = {}
+
         # Empty dictionary means we're not sending parameters.
         if self.fuzzed_input is None:
             if not self._fuzzed_input_factory:
@@ -125,11 +129,20 @@ class FuzzingRequest:
 
                 self._fuzzed_input_factory = fuzz_parameters(parameters)
 
-            self.fuzzed_input = {
-                key: value
-                for key, value in self._fuzzed_input_factory.example().items()
-                if value is not None
-            }
+            # NOTE: If we were really worried about performance later on,
+            #       we might be able to address this. Specifically, we don't
+            #       *need* to generate examples, just to throw it away later
+            #       if the key is already in data.
+            #       However, this involves parameter modification, which may
+            #       require a more involved change.
+            self.fuzzed_input = {}
+            for key, value in self._fuzzed_input_factory.example().items():
+                if key in data:
+                    self.fuzzed_input[key] = data[key]
+                    continue
+
+                if value is not None:
+                    self.fuzzed_input[key] = value
 
         if not auth:
             auth = get_victim_session_factory()()

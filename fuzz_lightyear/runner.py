@@ -10,7 +10,9 @@ def run_sequence(
 ):
     # First, determine whether this is a successful request sequence.
     for request in sequence:
-        response = request.send()
+        response = request.send(
+            data=responses.data,
+        )
         responses.add_response(response)
 
     # Then, check for vulnerabilities.
