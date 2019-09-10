@@ -16,31 +16,18 @@ General exclusions exclude operations which should not be included in the
 fuzzing process. Operations that can go here can include operations which don't
 function correctly in testing environments.
 """
-from functools import lru_cache
 from functools import wraps
 from typing import Callable
 from typing import Dict
 from typing import Optional
 from typing import Tuple
 
+from fuzz_lightyear.datastore import get_excluded_operations
+from fuzz_lightyear.datastore import get_non_vulnerable_operations
 from fuzz_lightyear.output.util import print_warning
 
 
-_get_non_vulnerable_operations: Callable[[], Dict[str, Optional[str]]] = lambda: {}
-_get_excluded_operations: Callable[[], Dict[str, Optional[str]]] = lambda: {}
-
-
-@lru_cache(maxsize=1)
-def get_non_vulnerable_operations() -> Dict[str, Optional[str]]:
-    return _get_non_vulnerable_operations()
-
-
-@lru_cache(maxsize=1)
-def get_excluded_operations() -> Dict[str, Optional[str]]:
-    return _get_excluded_operations()
-
-
-def non_vulnerable_operations() -> Callable:
+def non_vulnerable_operations(func: Callable) -> Callable:
     """Allows developers to specify operations which
     should not be tested for vulnerabilities.
 
@@ -55,18 +42,13 @@ def non_vulnerable_operations() -> Callable:
             ... def c():
                     return ['pets.get_pets', 'store.get_store_inventory']
     """
-    def decorator(func: Callable) -> Callable:
-        wrapped = _get_formatted_operations(func)
+    get_operations_fn = _get_formatted_operations(func)
+    get_non_vulnerable_operations().update(get_operations_fn())
 
-        global _get_non_vulnerable_operations
-        _get_non_vulnerable_operations = wrapped
-
-        return wrapped
-
-    return decorator
+    return func
 
 
-def operations() -> Callable:
+def operations(func: Callable) -> Callable:
     """Allows developers to specify operations which
     should not be called in the fuzzing process.
 
@@ -81,15 +63,10 @@ def operations() -> Callable:
             ... def c():
                     return ['pets.get_pets', 'store.get_store_inventory']
     """
-    def decorator(func: Callable) -> Callable:
-        wrapped = _get_formatted_operations(func)
+    get_operations_fn = _get_formatted_operations(func)
+    get_excluded_operations().update(get_operations_fn())
 
-        global _get_excluded_operations
-        _get_excluded_operations = wrapped
-
-        return wrapped
-
-    return decorator
+    return func
 
 
 def _get_formatted_operations(func: Callable) -> Callable[[], Dict[str, Optional[str]]]:

@@ -1,8 +1,8 @@
 import pytest
 
 import fuzz_lightyear
-from fuzz_lightyear.supplements.exclusions import get_excluded_operations
-from fuzz_lightyear.supplements.exclusions import get_non_vulnerable_operations
+from fuzz_lightyear.datastore import get_excluded_operations
+from fuzz_lightyear.datastore import get_non_vulnerable_operations
 
 
 @pytest.mark.parametrize(
@@ -48,5 +48,5 @@ def test_exclude_operations_strings(
     def foobar():
         return excluded_operations_input
 
-    exclusions_decorator()(foobar)
+    exclusions_decorator(foobar)
     assert get_exclusions_function() == expected_exclusions

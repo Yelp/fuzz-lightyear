@@ -5,9 +5,9 @@ from bravado.exception import HTTPError
 from bravado_core.exception import SwaggerMappingError      # type: ignore
 from jsonschema.exceptions import ValidationError           # type: ignore
 
+from ..datastore import get_non_vulnerable_operations
 from ..request import FuzzingRequest
 from ..supplements.abstraction import get_abstraction
-from ..supplements.exclusions import get_non_vulnerable_operations
 from .base import BasePlugin
 
 

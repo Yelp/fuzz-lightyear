@@ -5,6 +5,7 @@ from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Tuple
 
 
@@ -15,6 +16,32 @@ def get_user_defined_mapping() -> Dict:
     this returns a reference to the cached dictionary.
 
     :rtype: dict(str => function)
+    """
+    return {}
+
+
+@lru_cache(maxsize=1)
+def get_excluded_operations() -> Dict[str, Optional[str]]:
+    """
+    This is a global dictionary containing fuzzing-excluded operations.
+    Operation id's are keys. Tags are values, if the user provided them.
+    If you don't care about the operation's tag, you can get just the
+    excluded operations with `get_excluded_operations().keys()`.
+
+    :rtype: dict(str => str)
+    """
+    return {}
+
+
+@lru_cache(maxsize=1)
+def get_non_vulnerable_operations() -> Dict[str, Optional[str]]:
+    """
+    This is a global dictionary containing non-vulnerable operations.
+    Operation ids are keys. Tags are values, if the user provided them.
+    If you don't care about the operation's tag, you can get just the
+    excluded operations with `get_excluded_operations().keys()`.
+
+    :rtype: dict(str => str)
     """
     return {}
 

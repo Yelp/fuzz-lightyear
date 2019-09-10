@@ -3,11 +3,11 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+from .datastore import get_excluded_operations
 from .output.util import print_warning
 from .request import FuzzingRequest
 from .result import FuzzingResult
 from .supplements.abstraction import get_abstraction
-from .supplements.exclusions import get_excluded_operations
 
 
 def generate_sequences(

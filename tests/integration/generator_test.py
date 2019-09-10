@@ -17,9 +17,8 @@ def excluded_operations(request):
     def get_exclusions():
         return request.param
 
-    fuzz_lightyear.exclusions.operations()(get_exclusions)
+    fuzz_lightyear.exclusions.operations(get_exclusions)
     yield
-    fuzz_lightyear.exclusions.operations()(lambda: {})
 
 
 def test_length_one(mock_client):

@@ -15,9 +15,8 @@ def non_vulnerable_operations(request):
     def get_exclusions():
         return request.param
 
-    fuzz_lightyear.exclusions.non_vulnerable_operations()(get_exclusions)
+    fuzz_lightyear.exclusions.non_vulnerable_operations(get_exclusions)
     yield
-    fuzz_lightyear.exclusions.non_vulnerable_operations()(lambda: {})
 
 
 def test_invalid_request(mock_client):
