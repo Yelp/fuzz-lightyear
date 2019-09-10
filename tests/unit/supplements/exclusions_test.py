@@ -24,6 +24,14 @@ from fuzz_lightyear.datastore import get_non_vulnerable_operations
             ['pets.get_pets', 'store.get_store_inventory'],
             {'get_pets': 'pets', 'get_store_inventory': 'store'},
         ),
+        (
+            [None],
+            {},
+        ),
+        (
+            ['get_pets', None],
+            {'get_pets': None},
+        ),
     ],
 )
 @pytest.mark.parametrize(
