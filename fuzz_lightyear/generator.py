@@ -3,6 +3,8 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+from .datastore import get_excluded_operations
+from .output.util import print_warning
 from .request import FuzzingRequest
 from .result import FuzzingResult
 from .supplements.abstraction import get_abstraction
@@ -84,10 +86,25 @@ def _add_request_to_sequence(
 
 def _generate_requests(tag_group: str) -> Iterator[FuzzingRequest]:
     """
-    Generates all possible requests based on the client's Swagger specification.
+    Generates requests based on the client's Swagger specification.
+    Excludes methods specifed by developers with the
+    `@fuzz_lightyear.exclusions.operations` decorator.
     """
     client = get_abstraction().client
+    excluded_operations = get_excluded_operations()
+
     for operation_id in dir(getattr(client, tag_group)):
+        if operation_id in excluded_operations:
+            expected_tag = excluded_operations[operation_id]
+            if expected_tag is not None and expected_tag != tag_group:
+                print_warning(
+                    f'Excluded operation {operation_id} expected to have the '
+                    f'tag {expected_tag}, but actually had tag {tag_group}. '
+                    f'Going to exclude {operation_id} anyways.',
+                )
+
+            continue
+
         yield FuzzingRequest(
             operation_id=operation_id,
             tag=tag_group,
