@@ -54,10 +54,6 @@ class TestInjectVariables:
     def test_uses_default(self):
         assert get_user_defined_mapping()['caller']() == 2
 
-    def test_uses_provided_value_over_default(self):
-        assert get_user_defined_mapping()['caller'](dependency=2) == 3
-        assert get_user_defined_mapping()['caller'](3) == 4
-
     def test_throws_error_when_no_default(self):
         def foobar(no_default):
             pass
