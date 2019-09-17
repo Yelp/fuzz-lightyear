@@ -111,7 +111,7 @@ class FuzzingRequest:
             if not self._fuzzed_input_factory:
                 parameters = []
                 for name, param in self._swagger_operation.params.items():
-                    specification = get_param_type_spec(param)
+                    specification = get_param_type_spec(param).copy()
                     if param.location == 'body':
                         # For 'body' parameters, bravado discards information from the
                         # param spec itself. We pass in the 'required' parameter in this
