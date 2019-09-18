@@ -44,10 +44,6 @@ def _fuzz_parameter(
         }
     """
     required = parameter.get('required', required)
-    strategy = None
-
-    if 'enum' in parameter:
-        strategy = st.sampled_from(parameter['enum'])
 
     _type = parameter.get('type')
     if not _type:
@@ -57,10 +53,12 @@ def _fuzz_parameter(
             ),
         )
 
-    if not strategy:
-        strategy = _get_strategy_from_factory(_type, parameter.get('name'))
+    strategy = _get_strategy_from_factory(_type, parameter.get('name'))
 
     if not strategy:
+        if 'enum' in parameter:
+            return st.sampled_from(parameter['enum'])
+
         # As per https://swagger.io/docs/specification/data-models/data-types,
         # there are only a limited set of data types.
         mapping = {     # type: ignore # mypy doesn't like dynamic function signatures

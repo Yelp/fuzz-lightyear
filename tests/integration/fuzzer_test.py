@@ -188,6 +188,37 @@ class TestInvalidSchema:
             )])
 
 
+class TestEnumeration:
+
+    def test(self):
+        factory = fuzz_parameters([(
+            'key',
+            {
+                'type': 'string',
+                'enum': ['foo', 'bar'],
+            },
+        )])
+
+        assert_randomness(factory, ['foo', 'bar'])
+
+    def test_fixture(self):
+        def factory():
+            return 'qux'
+        fuzz_lightyear.register_factory('enumerated_field')(factory)
+
+        factory = fuzz_parameters([(
+            'enumerated_field',
+            {
+                'name': 'enumerated_field',
+                'type': 'string',
+                'enum': ['foo', 'bar'],
+                'required': True,
+            },
+        )])
+
+        assert factory.example()['enumerated_field'] == 'qux'
+
+
 def assert_randomness(strategy, expected_values):
     n = 10
     counter = Counter()
