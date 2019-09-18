@@ -54,10 +54,11 @@ def setup_client(
         return None
 
     try:
+        config = {'internally_dereference_refs': True}
         if not schema:
-            client = SwaggerClient.from_url(url)
+            client = SwaggerClient.from_url(url, config=config)
         else:
-            client = SwaggerClient.from_spec(schema, origin_url=url)
+            client = SwaggerClient.from_spec(schema, origin_url=url, config=config)
     except requests.exceptions.ConnectionError:
         return 'Unable to connect to server.'
     except (

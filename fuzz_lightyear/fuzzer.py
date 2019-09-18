@@ -11,7 +11,6 @@ from swagger_spec_validator.common import SwaggerValidationError    # type: igno
 
 from .datastore import get_user_defined_mapping
 from .output.logging import log
-from .supplements.abstraction import get_abstraction
 
 
 def fuzz_parameters(
@@ -19,8 +18,6 @@ def fuzz_parameters(
 ) -> SearchStrategy:
     output = {}
     for name, parameter in parameters:
-        parameter = _deref(parameter)
-
         output[name] = _fuzz_parameter(parameter)
 
     return st.fixed_dictionaries(output)
@@ -46,7 +43,6 @@ def _fuzz_parameter(
             },
         }
     """
-    parameter = _deref(parameter)
     required = parameter.get('required', required)
     strategy = None
 
@@ -158,8 +154,6 @@ def _fuzz_object(
     # TODO: Handle `additionalProperties`
     output = {}
     for name, specification in parameter['properties'].items():
-        specification = _deref(specification)
-
         try:
             strategy = _get_strategy_from_factory(specification['type'], name)
         except KeyError:
@@ -188,13 +182,6 @@ def _fuzz_object(
     return st.fixed_dictionaries(output)
 
 
-def _deref(parameter: Dict[str, Any]) -> Dict[str, Any]:
-    while '$ref' in parameter:
-        parameter = _get_model_definition(parameter['$ref'])
-
-    return parameter
-
-
 def _get_strategy_from_factory(
     expected_type: str,
     name: Optional[str] = None,
@@ -217,17 +204,3 @@ def _get_strategy_from_factory(
         return output
 
     return st.builds(type_cast)
-
-
-def _get_model_definition(
-    reference: str,
-) -> Dict[str, Any]:
-    """
-    :param reference: e.g. '#/defintions/{ModelName}'
-    """
-    # TODO: Handle multiple files?
-    try:
-        model_name = reference.split('/')[-1]
-        return get_abstraction().client.swagger_spec.definitions[model_name]._model_spec
-    except (IndexError, KeyError):  # pragma: no cover
-        raise SwaggerValidationError(f'Failed to get model: {reference}')
