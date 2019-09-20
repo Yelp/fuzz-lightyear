@@ -46,6 +46,12 @@ def get_non_vulnerable_operations() -> Dict[str, Optional[str]]:
     return {}
 
 
+def clear_cache():
+    """ Clear the cached values for fixture functions """
+    for value in get_user_defined_mapping().values():
+        value._fuzz_cache = None
+
+
 def inject_user_defined_variables(func: Callable) -> Callable:
     """
     This decorator allows the use of user defined variables in functions.
@@ -62,6 +68,9 @@ def inject_user_defined_variables(func: Callable) -> Callable:
 
     @wraps(func)
     def wrapped(*args, **kwargs) -> Any:
+        if getattr(func, '_fuzz_cache', None) is not None:
+            return func._fuzz_cache  # type: ignore
+
         expected_args = _get_injectable_variables(func)
         type_annotations = inspect.getfullargspec(func).annotations
 
@@ -72,19 +81,22 @@ def inject_user_defined_variables(func: Callable) -> Callable:
                 # two values for the same argument.
                 continue
 
-            if arg_name not in kwargs and arg_name in mapping:
-                value = mapping[arg_name]()
-                if (
-                    arg_name in type_annotations and
-                    not isinstance(type_annotations[arg_name], type(List))
-                ):
-                    # If type annotations are used, use that to cast
-                    # values for input.
-                    value = type_annotations[arg_name](value)
+            if arg_name not in mapping:
+                raise TypeError
 
-                kwargs[arg_name] = value
+            value = mapping[arg_name]()
+            if (
+                arg_name in type_annotations and
+                not isinstance(type_annotations[arg_name], type(List))
+            ):
+                # If type annotations are used, use that to cast
+                # values for input.
+                value = type_annotations[arg_name](value)
 
-        return func(*args, **kwargs)
+            kwargs[arg_name] = value
+
+        func._fuzz_cache = func(*args, **kwargs)  # type: ignore
+        return func._fuzz_cache  # type: ignore
 
     return wrapped
 

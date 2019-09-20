@@ -1,5 +1,6 @@
 from typing import List
 
+from .datastore import clear_cache
 from .request import FuzzingRequest
 from .response import ResponseSequence
 
@@ -15,4 +16,5 @@ def run_sequence(
 
     # Then, check for vulnerabilities.
     responses.analyze_requests(sequence)
+    clear_cache()
     return responses
