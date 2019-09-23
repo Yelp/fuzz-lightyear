@@ -88,3 +88,52 @@ def test_valid_request_with_idor(mock_client):
 
     assert responses.data['session'] == 'victim_session'
     assert responses.test_results['IDORPlugin']
+
+
+class TestStatefulSequence:
+
+    def test_basic(self, mock_client):
+        responses = run_sequence(
+            [
+                FuzzingRequest(
+                    tag='sequence',
+                    operation_id='post_alpha_one',
+                ),
+                FuzzingRequest(
+                    tag='sequence',
+                    operation_id='get_alpha_two',
+                ),
+            ],
+            ResponseSequence(),
+        )
+
+        # This value is returned from `post_alpha_one`. If they were
+        # independently fuzzed, it would not be this value.
+        assert responses.responses[-1] == 'ok'
+
+    def test_single_factory_usage(self, mock_client):
+        current_id = 1234
+
+        def create_resource():
+            nonlocal current_id
+            output = current_id
+            current_id += 1
+
+            return output
+        fuzz_lightyear.register_factory('id')(create_resource)
+        responses = run_sequence(
+            [
+                FuzzingRequest(
+                    tag='sequence',
+                    operation_id='post_bravo_one',
+                ),
+                FuzzingRequest(
+                    tag='sequence',
+                    operation_id='get_bravo_two',
+                ),
+            ],
+            ResponseSequence(),
+        )
+
+        assert responses.responses[-1] == 1234
+        assert current_id != 1234

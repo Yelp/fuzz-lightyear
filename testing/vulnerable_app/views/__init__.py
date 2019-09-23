@@ -3,5 +3,6 @@ __all__ = [
     'complex',
     'constant',
     'location',
+    'sequence',
     'types',
 ]
