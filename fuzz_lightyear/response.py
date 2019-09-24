@@ -8,7 +8,7 @@ from .request import FuzzingRequest
 
 class ResponseSequence:
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Collection of response objects returned by API calls.
         self.responses = []     # type: List[Any]
 
@@ -18,10 +18,10 @@ class ResponseSequence:
         # Result of analysis done on responses received
         self.test_results = {}  # type: Dict[str, bool]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.responses)
 
-    def add_response(self, response):
+    def add_response(self, response: Any) -> None:
         self.responses.append(response)
         for key in dir(response):
             self.data[key] = getattr(response, key)

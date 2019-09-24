@@ -37,7 +37,7 @@ class IDORPlugin(BasePlugin):
         last_request = request_sequence[-1]
         try:
             last_request.send(
-                auth=get_abstraction().get_attacker_session(),
+                auth=get_abstraction().get_attacker_session(),  # type: ignore
                 should_log=False,
             )
 

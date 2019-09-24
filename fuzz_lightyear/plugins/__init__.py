@@ -1,12 +1,15 @@
 from functools import lru_cache
+from typing import Sequence
+from typing import Type
 
 from ..output.logging import log
 from ..supplements.abstraction import get_abstraction
+from .base import BasePlugin
 from .idor import IDORPlugin
 
 
 @lru_cache(maxsize=1)
-def get_enabled_plugins():
+def get_enabled_plugins() -> Sequence[Type[BasePlugin]]:
     plugins = []
 
     if (

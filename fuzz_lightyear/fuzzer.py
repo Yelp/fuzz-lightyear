@@ -102,7 +102,7 @@ def _fuzz_string(
 
 def _fuzz_number(
     parameter: Dict[str, Any],
-    **kwargs
+    **kwargs: Any,
 ) -> SearchStrategy:
     # TODO: Handle all the optional qualifiers for numbers.
     # https://swagger.io/docs/specification/data-models/data-types/#numbers
@@ -111,7 +111,7 @@ def _fuzz_number(
 
 def _fuzz_integer(
     parameter: Dict[str, Any],
-    **kwargs
+    **kwargs: Any,
 ) -> SearchStrategy:
     # TODO: Handle all the optional qualifiers for numbers.
     # https://swagger.io/docs/specification/data-models/data-types/#numbers
@@ -120,7 +120,7 @@ def _fuzz_integer(
 
 def _fuzz_boolean(
     parameter: Dict[str, Any],
-    **kwargs
+    **kwargs: Any,
 ) -> SearchStrategy:
     return st.booleans()
 
@@ -149,7 +149,7 @@ def _fuzz_array(
 
 def _fuzz_object(
     parameter: Dict[str, Any],
-    **kwargs
+    **kwargs: Any,
 ) -> SearchStrategy:
     # TODO: Handle `additionalProperties`
     output = {}
@@ -189,7 +189,7 @@ def _get_strategy_from_factory(
     if name not in get_user_defined_mapping():
         return None
 
-    def type_cast():
+    def type_cast() -> Any:
         """Use known types to cast output, if applicable."""
         output = get_user_defined_mapping()[name]()
         if output is None:

@@ -4,7 +4,7 @@ from types import ModuleType
 from typing import Optional
 
 
-def import_fixtures(path: str):
+def import_fixtures(path: str) -> None:
     """Recursively imports all python files from a path."""
     if os.path.isfile(path):
         import_module_from_path(path)
