@@ -1,11 +1,16 @@
 import argparse
 import json
 import os
+from typing import Any
+from typing import cast
+from typing import Dict
+from typing import List
+from typing import Optional
 
 from fuzz_lightyear.version import VERSION
 
 
-def parse_args(argv=None):
+def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-v',
@@ -77,18 +82,21 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
-def _is_valid_schema(path):
+def _is_valid_schema(path: str) -> Dict[str, Any]:
     _is_valid_path(path)
     with open(path) as f:
         try:
-            return json.loads(f.read())
+            return cast(
+                Dict[str, Any],
+                json.loads(f.read()),
+            )
         except json.decoder.JSONDecodeError:
             raise argparse.ArgumentTypeError(
                 'Invalid JSON file: {}'.format(path),
             )
 
 
-def _is_valid_path(path):
+def _is_valid_path(path: str) -> str:
     if not os.path.exists(path):
         raise argparse.ArgumentTypeError(
             'Invalid path: {}'.format(path),

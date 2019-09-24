@@ -2,6 +2,7 @@ from collections import defaultdict
 from functools import lru_cache
 from typing import Any
 from typing import Callable
+from typing import cast
 from typing import Dict
 from typing import Optional
 from urllib.parse import quote_plus
@@ -19,22 +20,26 @@ from .supplements.abstraction import get_abstraction
 
 
 class FuzzingRequest:
-    def __init__(self, operation_id, tag='default', **kwargs):
+    def __init__(
+        self,
+        operation_id: str,
+        tag: str = 'default',
+        **kwargs: Any,
+    ) -> None:
         """
-        :type operation_id: str
         :param operation_id: unique identifier for each Swagger operation.
-
-        :type tag: str
         :param tag: this is how Swagger operations are grouped.
         """
         self.tag = tag
         self.operation_id = operation_id
 
-        self.fuzzed_input = kwargs              # type: Dict[str, Any]
+        self.fuzzed_input = kwargs              # type: Optional[Dict[str, Any]]
         if not self.fuzzed_input:
             self.fuzzed_input = None
 
-        self._fuzzed_input_factory = None       # type: Dict[str, SearchStrategy]
+        # This SearchStrategy should be generated with hypothesis' `fixed_dictionaries`,
+        # mapping keys to SearchStrategy.
+        self._fuzzed_input_factory = None       # type: Optional[SearchStrategy]
 
     @property
     def id(self) -> str:
@@ -62,10 +67,10 @@ class FuzzingRequest:
             **params,
         }
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.tag}.{self.operation_id})'
 
-    def __str__(self):
+    def __str__(self) -> str:
         data = self.json()
         url = (
             f'{self._swagger_operation.swagger_spec.api_url.rstrip("/")}'
@@ -96,10 +101,10 @@ class FuzzingRequest:
     def send(
         self,
         auth: Optional[Dict[str, Any]] = None,
-        *args,
+        *args: Any,
         should_log: bool = True,
         data: Optional[Dict[str, Any]] = None,
-        **kwargs
+        **kwargs: Any,
     ) -> Any:
         """
         :param auth: parameters to pass to abstracted request method to specify
@@ -159,16 +164,19 @@ class FuzzingRequest:
             **kwargs
         )
 
-    @cached_property
+    @cached_property        # type: ignore
     def _swagger_operation(self) -> CallableOperation:
-        return getattr(
-            getattr(get_abstraction().client, self.tag),
-            self.operation_id,
+        return cast(
+            CallableOperation,
+            getattr(
+                getattr(get_abstraction().client, self.tag),
+                self.operation_id,
+            ),
         )
 
 
 @lru_cache(maxsize=1)
-def get_victim_session_factory() -> Callable:
+def get_victim_session_factory() -> Callable[..., Dict[str, Any]]:
     factory = get_abstraction().get_victim_session
     if factory:
         return factory

@@ -10,13 +10,15 @@ an ability to create adhoc resources directly. These functions support this,
 and allow developers to configure their tests as necessary.
 """
 from typing import Callable
+from typing import Iterable
+from typing import Union
 
 from fuzz_lightyear.datastore import get_user_defined_mapping
 from fuzz_lightyear.datastore import inject_user_defined_variables
 from fuzz_lightyear.exceptions import ConflictingKeys
 
 
-def register_factory(keys):
+def register_factory(keys: Union[str, Iterable[str]]) -> Callable:
     """
     :type keys: str|iterable
 

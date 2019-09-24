@@ -87,7 +87,7 @@ def _format_result(result: FuzzingResult) -> Tuple[str, str]:
     return (
         ','.join([
             key
-            for key, value in result.responses.test_results.items()     # type: ignore
+            for key, value in result.responses.test_results.items()
             if value
         ]),
         textwrap.dedent("""

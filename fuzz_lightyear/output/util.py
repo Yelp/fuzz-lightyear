@@ -4,7 +4,7 @@ from .color import AnsiColor
 from .color import colorize
 
 
-def print_error(message):
+def print_error(message: str) -> None:
     print(
         '{} {}'.format(
             colorize('error:', AnsiColor.RED),
@@ -14,7 +14,7 @@ def print_error(message):
     )
 
 
-def print_warning(message):
+def print_warning(message: str) -> None:
     print(
         '{} {}'.format(
             colorize('warning:', AnsiColor.YELLOW),

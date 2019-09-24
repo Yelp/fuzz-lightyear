@@ -1,14 +1,11 @@
 from functools import lru_cache
+from typing import Any
 from typing import Callable
+from typing import Optional
 
 from bravado.client import SwaggerClient
 
 from fuzz_lightyear.exceptions import ConflictingHandlers
-
-
-@lru_cache(maxsize=1)
-def get_abstraction():
-    return Abstraction()
 
 
 class Abstraction:
@@ -17,34 +14,39 @@ class Abstraction:
     all exposed through one single interface.
     """
 
-    def __init__(self):
-        self.get_victim_session = None      # type: Callable
-        self.get_attacker_session = None    # type: Callable
+    def __init__(self) -> None:
+        self.get_victim_session = None      # type: Optional[Callable]
+        self.get_attacker_session = None    # type: Optional[Callable]
 
-        self.client = None                  # type: SwaggerClient
-        self._request_method = None         # type: Callable
+        self.client = None                  # type: Optional[SwaggerClient]
+        self._request_method = None         # type: Optional[Callable]
 
     @property
-    def request_method(self):
+    def request_method(self) -> Callable:
         if self._request_method:
             return self._request_method
 
         return default_request_method
 
     @request_method.setter
-    def request_method(self, func: Callable):
+    def request_method(self, func: Callable) -> None:
         if self._request_method:
             raise ConflictingHandlers('make_request')
 
         self._request_method = func
 
 
+@lru_cache(maxsize=1)
+def get_abstraction() -> Abstraction:
+    return Abstraction()
+
+
 def default_request_method(
     operation_id: str,
     tag: str = 'default',
-    *args,
-    **kwargs
-):
+    *args: Any,
+    **kwargs: Any,
+) -> Any:
     """
     :param operation_id: there's a unique operationId for each
         (tag, operation) in the Swagger schema

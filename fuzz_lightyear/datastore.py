@@ -46,7 +46,7 @@ def get_non_vulnerable_operations() -> Dict[str, Optional[str]]:
     return {}
 
 
-def clear_cache():
+def clear_cache() -> None:
     """ Clear the cached values for fixture functions """
     for value in get_user_defined_mapping().values():
         value._fuzz_cache = None
@@ -67,7 +67,7 @@ def inject_user_defined_variables(func: Callable) -> Callable:
     mapping = get_user_defined_mapping()
 
     @wraps(func)
-    def wrapped(*args, **kwargs) -> Any:
+    def wrapped(*args: Any, **kwargs: Any) -> Any:
         if getattr(func, '_fuzz_cache', None) is not None:
             return func._fuzz_cache  # type: ignore
 

@@ -20,7 +20,7 @@ from .supplements.abstraction import get_abstraction
 from .usage import parse_args
 
 
-def main(argv: Optional[List[Any]] = None):
+def main(argv: Optional[List[str]] = None) -> int:
     args = parse_args(argv)
     if args.verbose:    # pragma: no cover
         log.set_debug_level(args.verbose)
@@ -76,7 +76,7 @@ def setup_client(
     return None
 
 
-def setup_fixtures(fixtures: List[str]):
+def setup_fixtures(fixtures: List[str]) -> None:
     for fixture_path in fixtures:
         import_fixtures(fixture_path)
 

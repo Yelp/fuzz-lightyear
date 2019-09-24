@@ -90,7 +90,7 @@ def _get_formatted_operations(func: Callable) -> Callable[[], Dict[str, Optional
     return wrapped
 
 
-def _format_operation(operation) -> Optional[Tuple[str, Optional[str]]]:
+def _format_operation(operation: str) -> Optional[Tuple[str, Optional[str]]]:
     if isinstance(operation, str):
         num_dots = operation.count('.')
         if num_dots == 0:
