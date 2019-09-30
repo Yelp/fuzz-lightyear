@@ -4,9 +4,9 @@ These endpoints focus on accepting input from a variety of different locations.
 from flask_restplus import Resource
 
 from ..core.extensions import api
-from ..models.basic import string_model
 from ..parsers.basic import location_parser
 from ..util import get_name
+from .models.basic import string_model
 
 
 ns = api.namespace(

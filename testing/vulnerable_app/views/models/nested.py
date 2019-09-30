@@ -1,6 +1,6 @@
 from flask_restplus import fields
 
-from ..core.extensions import api
+from ...core.extensions import api
 from .basic import session_model
 
 

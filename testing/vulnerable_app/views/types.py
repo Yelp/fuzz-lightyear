@@ -4,12 +4,12 @@ These endpoints focus on accepting a variety of different types of input.
 from flask_restplus import Resource
 
 from ..core.extensions import api
-from ..models.basic import string_model
 from ..parsers.arrays import boolean_array_parser
 from ..parsers.arrays import required_array_parser
 from ..parsers.arrays import string_array_parser
 from ..parsers.basic import primitive_query_parser
 from ..util import get_name
+from .models.basic import string_model
 
 
 ns = api.namespace(

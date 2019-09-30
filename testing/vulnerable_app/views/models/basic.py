@@ -2,7 +2,7 @@ from flask import request
 from flask_restplus import fields
 
 from . import Model
-from ..core.extensions import api
+from ...core.extensions import api
 
 
 string_model = Model(

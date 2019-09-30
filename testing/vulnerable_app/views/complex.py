@@ -4,8 +4,8 @@ These endpoints focus on nested and more complicated inputs.
 from flask_restplus import Resource
 
 from ..core.extensions import api
-from ..models.nested import UserModel
 from ..util import get_name
+from .models.nested import UserModel
 
 
 ns = api.namespace(

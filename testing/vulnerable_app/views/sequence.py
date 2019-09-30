@@ -7,9 +7,9 @@ from flask_restplus import reqparse
 from flask_restplus import Resource
 
 from ..core.extensions import api
-from ..models.basic import string_model
 from ..parsers.basic import number_query_parser
 from ..util import get_name
+from .models.basic import string_model
 
 
 ns = api.namespace(
