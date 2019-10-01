@@ -155,12 +155,17 @@ class FuzzingRequest:
         if should_log:
             log.info(str(self))
 
+        _merge_auth_headers(self.fuzzed_input, auth)
+
         return get_abstraction().request_method(
             operation_id=self.operation_id,
             tag=self.tag,
             *args,
-            **auth,
             **self.fuzzed_input,
+
+            # auth details should override fuzzed_input, because specifics should always
+            # override randomly generated content.
+            **auth,
             **kwargs
         )
 
@@ -183,3 +188,26 @@ def get_victim_session_factory() -> Callable[..., Dict[str, Any]]:
 
     print_warning('No auth method specified.')
     return lambda: {}
+
+
+def _merge_auth_headers(fuzzed_params: Dict[str, Any], auth: Dict[str, Any]) -> None:
+    """
+    The underlying Bravado client allows us to specify request headers on a per-request
+    basis (https://bravado.readthedocs.io/en/stable/configuration.html#per-request-configuration).  # noqa: E501
+    However, when there are authorization headers specified by the Swagger specification,
+    the Bravado library parses it and merges it within the parameters required for the
+    callable operation.
+
+    This means, our fuzzing engine will set a value for it, which will override the
+    manually specified authorization headers. To address this fact, we replace the fuzzed
+    header with the actual one.
+    """
+    if not auth.get('_request_options', {}).get('headers', None):
+        return
+
+    for key in auth['_request_options']['headers']:
+        # It looks like Bravado does some serialization for Python purposes, so we need
+        # to mirror this.
+        key = key.replace('-', '_')
+        if key in fuzzed_params:
+            fuzzed_params.pop(key)
