@@ -13,3 +13,10 @@ user_model = api.model(
         'user_id': fields.Integer(required=True),
     },
 )
+
+widget_model = api.model(
+    'Widget',
+    {
+        'id': fields.Integer(required=True),
+    },
+)

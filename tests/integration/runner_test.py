@@ -33,21 +33,6 @@ def test_invalid_request(mock_client):
         )
 
 
-def test_valid_request_skip_idor_no_inputs(mock_client):
-    responses = run_sequence(
-        [
-            FuzzingRequest(
-                tag='basic',
-                operation_id='get_no_inputs_required',
-            ),
-        ],
-        ResponseSequence(),
-    )
-
-    assert responses.data['session'] == 'victim_session'
-    assert responses.test_results == {}
-
-
 @pytest.mark.parametrize(
     'non_vulnerable_operations',
     [
@@ -72,22 +57,6 @@ def test_valid_request_skip_idor_manually_excluded(
 
     assert isinstance(responses.data['value'], str)
     assert responses.test_results == {}
-
-
-def test_valid_request_with_idor(mock_client):
-    responses = run_sequence(
-        [
-            FuzzingRequest(
-                tag='basic',
-                operation_id='get_private_listing',
-                id=1,
-            ),
-        ],
-        ResponseSequence(),
-    )
-
-    assert responses.data['session'] == 'victim_session'
-    assert responses.test_results['IDORPlugin']
 
 
 class TestStatefulSequence:
