@@ -1,4 +1,5 @@
 import json
+import string
 from typing import Any
 from typing import Dict
 from typing import List
@@ -90,6 +91,15 @@ def _fuzz_string(
     parameter: Dict[str, Any],
     required: bool = False,
 ) -> SearchStrategy:
+    if parameter.get('in', None) == 'header':
+        return st.text(
+            # According to RFC 7230, non-ascii letters are deprecated, and there's
+            # no telling what the server will do if they are sent. Since the intent
+            # is not to break the server, but to send valid requests instead, we're
+            # just going to limit it accordingly.
+            alphabet=string.ascii_letters,
+        )
+
     # TODO: Handle a bunch of swagger string formats.
     # https://swagger.io/docs/specification/data-models/data-types/#string
     if parameter.get('required', required):
