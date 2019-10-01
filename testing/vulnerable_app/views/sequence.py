@@ -90,7 +90,6 @@ class GetWithSideEffect(Resource):
     @api.response(404, 'Not Found')
     @requires_user
     def get(self, id, user):
-        print(user.to_dict())
         if not user.has_created_resource:
             abort(401)
 
