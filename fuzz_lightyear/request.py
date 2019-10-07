@@ -48,6 +48,13 @@ class FuzzingRequest:
             self.operation_id,
         )
 
+    def _format_path(
+        self,
+        fuzzed_input: Any,
+    ) -> str:
+        formatted_input = fuzzed_input.strip('[]').replace(',', '%2C')
+        return formatted_input
+
     def json(self) -> Dict[str, Any]:
         path = self._swagger_operation.path_name    # type: str
         params = defaultdict(dict)                  # type: Dict[str, Dict[str, Any]]
@@ -57,7 +64,10 @@ class FuzzingRequest:
                     continue
 
                 if value.location == 'path':
-                    path = path.replace(f'{{{key}}}', str(self.fuzzed_input[key]))
+                    path = path.replace(
+                        f'{{{key}}}',
+                        self._format_path(self.fuzzed_input[key]),
+                    )
                 else:
                     params[value.location][key] = self.fuzzed_input[key]
 
