@@ -23,6 +23,9 @@ class ResponseSequence:
 
     def add_response(self, response: Any) -> None:
         self.responses.append(response)
+        if not response:
+            return
+
         for key in dir(response):
             self.data[key] = getattr(response, key)
 

@@ -5,4 +5,5 @@ __all__ = [
     'location',
     'sequence',
     'types',
+    'user',
 ]

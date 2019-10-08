@@ -4,10 +4,10 @@ Basic, straight forward endpoints for MVP testing.
 from flask_restplus import Resource
 
 from ..core.extensions import api
-from ..models.basic import session_model
-from ..models.basic import variable_string_model
 from ..parsers.basic import number_query_parser
 from ..util import get_name
+from .models.basic import session_model
+from .models.basic import variable_string_model
 
 
 ns = api.namespace(

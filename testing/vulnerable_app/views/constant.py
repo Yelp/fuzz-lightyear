@@ -5,9 +5,9 @@ from flask import abort
 from flask_restplus import Resource
 
 from ..core.extensions import api
-from ..models.basic import string_model
 from ..parsers.error import error_code_parser
 from ..util import get_name
+from .models.basic import string_model
 
 
 ns = api.namespace(

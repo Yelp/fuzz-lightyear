@@ -6,5 +6,6 @@ mypy
 pre-commit
 pytest
 requests
+sqlalchemy
 tox
 tox-pip-extensions

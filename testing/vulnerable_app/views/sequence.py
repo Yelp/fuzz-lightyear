@@ -3,13 +3,19 @@ These endpoints focus on testing the stateful-ness of the fuzzer.
 
 The `alpha` series of endpoints enforce basic stateful-ness.
 """
+from flask import abort
 from flask_restplus import reqparse
 from flask_restplus import Resource
+from sqlalchemy.orm.exc import NoResultFound
 
+from ..core import database
+from ..core.auth import requires_user
 from ..core.extensions import api
-from ..models.basic import string_model
+from ..models.widget import Widget
 from ..parsers.basic import number_query_parser
 from ..util import get_name
+from .models.basic import string_model
+from .models.database import widget_model
 
 
 ns = api.namespace(
@@ -53,3 +59,50 @@ class BravoTwo(Resource):
     @api.response(200, 'Success', model=int)
     def get(self):
         return number_query_parser.parse_args()['id']
+
+
+@ns.route('/side-effect/create')
+class CreateWithSideEffect(Resource):
+    @api.doc(security='apikey')
+    @api.response(200, 'Success', model=widget_model)
+    @requires_user
+    def post(self, user):
+        user.has_created_resource = True
+        user.save()
+
+        with database.connection() as session:
+            entry = Widget()
+
+            session.add(entry)
+            session.commit()
+
+            widget_id = entry.id
+
+        return {
+            'id': widget_id,
+        }
+
+
+@ns.route('/side-effect/get/<int:id>')
+class GetWithSideEffect(Resource):
+    @api.doc(security='apikey')
+    @api.response(200, 'Success', model=widget_model)
+    @api.response(404, 'Not Found')
+    @requires_user
+    def get(self, id, user):
+        if not user.has_created_resource:
+            abort(401)
+
+        with database.connection() as session:
+            try:
+                entry = session.query(Widget).filter(
+                    Widget.id == id,
+                ).one()
+            except NoResultFound:
+                abort(404)
+
+            widget_id = entry.id
+
+        return {
+            'id': widget_id,
+        }
