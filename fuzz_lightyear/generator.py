@@ -3,11 +3,42 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+from bravado.client import SwaggerClient
+
 from .datastore import get_excluded_operations
+from .datastore import get_included_tags
 from .output.util import print_warning
 from .request import FuzzingRequest
 from .result import FuzzingResult
 from .supplements.abstraction import get_abstraction
+
+
+def get_fuzzable_tags(client: Optional[SwaggerClient]) -> List[str]:
+    """Given a Swagger client, returns a list of tags that should
+    actually be fuzzed. This respects the user-defined whitelist for
+    tags.
+
+    :param client: The Swagger client being fuzzed.
+    :returns: A list of tags to fuzz.
+    """
+    if not client:
+        return []
+
+    allowlisted_tags = get_included_tags()
+    if not allowlisted_tags:
+        return dir(client)
+
+    fuzzable_tags = []
+    for tag in allowlisted_tags:
+        if tag not in dir(client):
+            print_warning(
+                f'The tag "{tag}" is not in the Swagger schema, will not fuzz it.',
+            )
+            continue
+
+        fuzzable_tags.append(tag)
+
+    return fuzzable_tags
 
 
 def generate_sequences(
@@ -24,7 +55,8 @@ def generate_sequences(
     #       (rather than starting operation), so that it's clearer for
     #       output.
     client = get_abstraction().client
-    for tag_group in dir(client):
+
+    for tag_group in get_fuzzable_tags(client):
         last_results = []   # type: List
         for _ in range(n):
             good_sequences = []

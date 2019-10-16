@@ -6,6 +6,7 @@ from typing import Callable
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Set
 from typing import Tuple
 
 
@@ -18,6 +19,15 @@ def get_user_defined_mapping() -> Dict:
     :rtype: dict(str => function)
     """
     return {}
+
+
+@lru_cache(maxsize=1)
+def get_included_tags() -> Set[str]:
+    """This is a global set containing tags which should
+    be fuzzed. Each element is a string for the tag which
+    should be included.
+    """
+    return set()
 
 
 @lru_cache(maxsize=1)
