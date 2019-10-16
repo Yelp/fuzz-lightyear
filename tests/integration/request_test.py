@@ -60,16 +60,13 @@ def test_send_specified_auth(mock_client):
 
 def test_str_encodes_array_path_parameters(mock_client):
     request = FuzzingRequest(
-        operation_id='get_various_locations',
-        tag='location',
-        path_id='[1,2,3]',
-        query='a',
-        header='b',
+        operation_id='get_expect_path_array',
+        tag='types',
+        ids=[1, 2, 3],
     )
     request.send()
     assert str(request) == (
-        'curl -X GET http://localhost:5000/location/1%2C2%2C3?query=a '
-        '-H \'header: b\''
+        'curl -X GET http://localhost:5000/types/path_array/1%2C2%2C3'
     )
 
 

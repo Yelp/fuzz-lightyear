@@ -33,6 +33,23 @@ class ExpectArray(Resource):
     def put(self):
         return string_model.output()
 
+
+@ns.route('/path_array/<array:ids>')
+class ExpectPathArray(Resource):
+    @api.doc(params={
+        'ids': {
+            'type': 'array',
+            'collectionFormat': 'csv',
+            'in': 'path',
+            'items': {
+                'type': 'integer',
+            },
+        },
+    })
+    def get(self, ids):
+        return string_model.output()
+
+
 # TODO: I would do an `object` endpoint (that's different than a post body),
 #       but I don't know whether reqparse supports that.
 

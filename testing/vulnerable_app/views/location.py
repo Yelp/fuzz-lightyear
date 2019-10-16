@@ -22,10 +22,6 @@ class VariousLocations(Resource):
     def post(self, path_id):
         return string_model.output()
 
-    @api.expect(location_parser)
-    def get(self, path_id):
-        return string_model.output()
-
 
 @api.marshal_with(string_model.format)
 @ns.route('/')

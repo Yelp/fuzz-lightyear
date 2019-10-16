@@ -4,6 +4,7 @@ from typing import Any
 from typing import Callable
 from typing import cast
 from typing import Dict
+from typing import List
 from typing import Optional
 from urllib.parse import quote_plus
 from urllib.parse import urlencode
@@ -17,6 +18,13 @@ from .fuzzer import fuzz_parameters
 from .output.logging import log
 from .output.util import print_warning
 from .supplements.abstraction import get_abstraction
+
+COLLECTION_FORMAT_ENCODING = {
+    'csv': '%2C',
+    'tsv': '%5Ct',
+    'pipes': '%7C',
+    'ssv': '%20',
+}
 
 
 class FuzzingRequest:
@@ -48,12 +56,14 @@ class FuzzingRequest:
             self.operation_id,
         )
 
-    def _format_path(
+    def _format_array(
         self,
-        fuzzed_input: Any,
+        fuzzed_input: List,
+        collection_format: str,
     ) -> str:
-        formatted_input = fuzzed_input.strip('[]').replace(',', '%2C')
-        return formatted_input
+        return COLLECTION_FORMAT_ENCODING[collection_format].join(
+            [str(i) for i in fuzzed_input],
+        )
 
     def json(self) -> Dict[str, Any]:
         path = self._swagger_operation.path_name    # type: str
@@ -64,9 +74,16 @@ class FuzzingRequest:
                     continue
 
                 if value.location == 'path':
+                    if value.param_spec['type'] == 'array':
+                        fuzzed_input = self._format_array(
+                            self.fuzzed_input[key],
+                            value.param_spec.get('collectionFormat', 'csv'),
+                        )
+                    else:
+                        fuzzed_input = str(self.fuzzed_input[key])
                     path = path.replace(
                         f'{{{key}}}',
-                        self._format_path(self.fuzzed_input[key]),
+                        fuzzed_input,
                     )
                 else:
                     params[value.location][key] = self.fuzzed_input[key]
