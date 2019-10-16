@@ -19,11 +19,11 @@ from .output.logging import log
 from .output.util import print_warning
 from .supplements.abstraction import get_abstraction
 
-COLLECTION_FORMAT_ENCODING = {
-    'csv': '%2C',
-    'tsv': '%5Ct',
-    'pipes': '%7C',
-    'ssv': '%20',
+COLLECTION_FORMAT_CHARS = {
+    'csv': ',',
+    'tsv': '\t',
+    'pipes': '|',
+    'ssv': ' ',
 }
 
 
@@ -61,9 +61,8 @@ class FuzzingRequest:
         fuzzed_input: List,
         collection_format: str,
     ) -> str:
-        return COLLECTION_FORMAT_ENCODING[collection_format].join(
-            [str(i) for i in fuzzed_input],
-        )
+        separator = quote_plus(COLLECTION_FORMAT_CHARS[collection_format])
+        return separator.join([str(i) for i in fuzzed_input])
 
     def json(self) -> Dict[str, Any]:
         path = self._swagger_operation.path_name    # type: str

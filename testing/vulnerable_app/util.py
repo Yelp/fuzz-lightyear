@@ -1,3 +1,5 @@
+from urllib.parse import quote_plus
+
 from werkzeug.routing import BaseConverter
 
 
@@ -17,7 +19,7 @@ class ListConverter(BaseConverter):
 
     def __init__(self, url_map):
         super(ListConverter, self).__init__(url_map)
-        self.delimiter = '%2C'
+        self.delimiter = quote_plus(',')
 
     def to_python(self, value):
         return value.split(self.delimiter)
