@@ -31,7 +31,7 @@ def test_json(mock_client):
         },
     }
     assert str(request) == (
-        'curl -X POST http://localhost:5000/location/path?query=a '
+        f'curl -X POST {URL}/location/path?query=a '
         '--data \'form=b\' '
         '-H \'header: c\''
     )
@@ -66,7 +66,7 @@ def test_str_encodes_array_path_parameters(mock_client):
     )
     request.send()
     assert str(request) == (
-        'curl -X GET http://localhost:5000/types/path_array/1%2C2%2C3'
+        f'curl -X GET {URL}/types/path_array/1%2C2%2C3'
     )
 
 

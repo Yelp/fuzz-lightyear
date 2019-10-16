@@ -56,7 +56,7 @@ class FuzzingRequest:
             self.operation_id,
         )
 
-    def _format_array(
+    def _encode_array_in_path(
         self,
         fuzzed_input: List,
         collection_format: str,
@@ -74,7 +74,7 @@ class FuzzingRequest:
 
                 if value.location == 'path':
                     if value.param_spec['type'] == 'array':
-                        fuzzed_input = self._format_array(
+                        fuzzed_input = self._encode_array_in_path(
                             self.fuzzed_input[key],
                             value.param_spec.get('collectionFormat', 'csv'),
                         )
