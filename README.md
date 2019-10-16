@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/Yelp/fuzz-lightyear.svg?branch=master)](https://travis-ci.com/Yelp/fuzz-lightyear)
+
 # fuzz-lightyear
 
 fuzz-lightyear is a [pytest-inspired](https://docs.pytest.org/en/latest/),
