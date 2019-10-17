@@ -17,8 +17,20 @@ def excluded_operations(request):
     def get_exclusions():
         return request.param
 
-    fuzz_lightyear.exclusions.operations(get_exclusions)
+    fuzz_lightyear.exclude.operations(get_exclusions)
     yield
+
+
+@pytest.fixture
+def included_tags(request):
+    if not isinstance(request.param, list):
+        raise ValueError
+
+    def get_included_tags():
+        return request.param
+
+    fuzz_lightyear.include.tags(get_included_tags)
+    yield request.param
 
 
 def test_length_one(mock_client):
@@ -58,6 +70,22 @@ def test_exclude_operations(mock_client, excluded_operations):
             for result in results
         ],
     )
+
+
+@pytest.mark.parametrize(
+    'included_tags',
+    [
+        (['user']),
+    ],
+    indirect=['included_tags'],
+)
+def test_included_tags(mock_client, included_tags):
+    results = list(generate_sequences(1))
+
+    assert len(results) > 0
+    for sequence in [result.requests for result in results]:
+        for request in sequence:
+            assert request.tag in included_tags
 
 
 def test_supply_single_test(mock_client):

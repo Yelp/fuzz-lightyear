@@ -1,6 +1,7 @@
 import pytest
 
 from fuzz_lightyear.datastore import get_excluded_operations
+from fuzz_lightyear.datastore import get_included_tags
 from fuzz_lightyear.datastore import get_non_vulnerable_operations
 from fuzz_lightyear.datastore import get_user_defined_mapping
 from fuzz_lightyear.plugins import get_enabled_plugins
@@ -16,3 +17,4 @@ def clear_caches():
     get_victim_session_factory.cache_clear()
     get_excluded_operations.cache_clear()
     get_non_vulnerable_operations.cache_clear()
+    get_included_tags.cache_clear()
