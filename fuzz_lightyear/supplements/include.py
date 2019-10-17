@@ -10,7 +10,7 @@ def tags(func: Callable[[], Iterable[str]]) -> Callable:
 
     Example:
         Only fuzz operations with the 'user_account' tag.
-            >>> @fuzz_lightyear.inclusions.tags
+            >>> @fuzz_lightyear.include.tags
             ... def a():
             ...     return ['user_account']
     """

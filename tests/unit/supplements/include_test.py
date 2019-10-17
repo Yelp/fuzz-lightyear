@@ -25,5 +25,5 @@ def test_include_tags(included_tags, expected_result):
     def foobar():
         return included_tags
 
-    fuzz_lightyear.inclusions.tags(foobar)
+    fuzz_lightyear.include.tags(foobar)
     assert get_included_tags() == expected_result

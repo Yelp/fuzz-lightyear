@@ -29,7 +29,7 @@ def included_tags(request):
     def get_included_tags():
         return request.param
 
-    fuzz_lightyear.inclusions.tags(get_included_tags)
+    fuzz_lightyear.include.tags(get_included_tags)
     yield request.param
 
 
