@@ -15,7 +15,7 @@ from .supplements.abstraction import get_abstraction
 
 def get_fuzzable_tags(client: Optional[SwaggerClient]) -> List[str]:
     """Given a Swagger client, returns a list of tags that should
-    actually be fuzzed. This respects the user-defined whitelist for
+    actually be fuzzed. This respects the user-defined allowlist for
     tags.
 
     :param client: The Swagger client being fuzzed.
