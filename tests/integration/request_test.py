@@ -31,7 +31,7 @@ def test_json(mock_client):
         },
     }
     assert str(request) == (
-        'curl -X POST http://localhost:5000/location/path?query=a '
+        f'curl -X POST {URL}/location/path?query=a '
         '--data \'form=b\' '
         '-H \'header: c\''
     )
@@ -58,6 +58,18 @@ def test_send_specified_auth(mock_client):
     ).session == 'attacker_session'
 
 
+def test_str_encodes_array_path_parameters(mock_client):
+    request = FuzzingRequest(
+        operation_id='get_expect_path_array',
+        tag='types',
+        ids=[1, 2, 3],
+    )
+    request.send()
+    assert str(request) == (
+        f'curl -X GET {URL}/types/path_array/1%2C2%2C3'
+    )
+
+
 def test_str_encodes_array_query_parameters(mock_client):
     request = FuzzingRequest(
         operation_id='get_expect_array',
@@ -67,7 +79,6 @@ def test_str_encodes_array_query_parameters(mock_client):
             False,
         ],
     )
-
     assert str(request) == f'curl -X GET {URL}/types/array?array=True&array=False'
 
 
