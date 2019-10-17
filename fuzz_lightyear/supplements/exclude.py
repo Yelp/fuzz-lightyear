@@ -33,12 +33,12 @@ def non_vulnerable_operations(func: Callable) -> Callable:
 
     Examples:
         Ignoring operations specified by operation ids in lists
-            >>> @fuzz_lightyear.exclusions.non_vulnerable_operations
+            >>> @fuzz_lightyear.exclude.non_vulnerable_operations
             ... def b():
             ...     return ['get_pets', 'get_store_inventory']
 
         Ignoring operations specified by "tag.operation_id" in lists
-            >>> @fuzz_lightyear.exclusions.non_vulnerable_operations
+            >>> @fuzz_lightyear.exclude.non_vulnerable_operations
             ... def c():
                     return ['pets.get_pets', 'store.get_store_inventory']
     """
@@ -54,12 +54,12 @@ def operations(func: Callable) -> Callable:
 
     Examples:
         Ignoring operations specified by operation ids in lists
-            >>> @fuzz_lightyear.exclusions.operations
+            >>> @fuzz_lightyear.exclude.operations
             ... def b():
             ...     return ['get_pets', 'get_store_inventory']
 
         Ignoring operations specified by "tag.operation_id" in lists
-            >>> @fuzz_lightyear.exclusions.operations
+            >>> @fuzz_lightyear.exclude.operations
             ... def c():
                     return ['pets.get_pets', 'store.get_store_inventory']
     """

@@ -17,7 +17,7 @@ def excluded_operations(request):
     def get_exclusions():
         return request.param
 
-    fuzz_lightyear.exclusions.operations(get_exclusions)
+    fuzz_lightyear.exclude.operations(get_exclusions)
     yield
 
 
