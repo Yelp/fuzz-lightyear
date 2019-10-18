@@ -4,18 +4,20 @@ from setuptools import find_packages
 from setuptools import setup
 
 
+def local_file(path):
+    return os.path.relpath(
+        os.path.join(
+            os.path.dirname(__file__),
+            path,
+        ),
+    )
+
+
 # We can't import fuzz_lightyear.version, since it pulls in all other
 # fuzz_lightyear modules. Therefore, we need to execute the file
 # directly.
 VERSION = None      # needed for flake8
-with open(
-    os.path.relpath(
-        os.path.join(
-            os.path.dirname(__file__),
-            'fuzz_lightyear/version.py',
-        ),
-    ),
-) as f:
+with open(local_file('fuzz_lightyear/version.py')) as f:
     exec(f.read())
 
 
@@ -24,6 +26,8 @@ setup(
     packages=find_packages(exclude=(['test*', 'tmp*'])),
     version=VERSION,
     description='Vulnerability Discovery through Stateful Swagger Fuzzing',
+    long_description=open(local_file('README.md')).read(),
+    long_description_content_type='text/markdown',
     license='Copyright Yelp, Inc. 2019',
     author=', '.join([
         'Aaron Loo <aaronloo@yelp.com>',
@@ -56,6 +60,6 @@ setup(
         'Topic :: Utilities',
         'Environment :: Console',
         'Operating System :: OS Independent',
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
     ],
 )
