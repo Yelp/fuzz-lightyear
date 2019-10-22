@@ -104,14 +104,14 @@ def _find_bounds(schema: Dict[str, Any]) -> Dict[str, Any]:
        By default, maximums and minimums in swagger are not exclusive"""
     bounds = {}
     if 'minimum' in schema:
-        bounds['minimum'] = schema['minimum']
+        bounds['min_value'] = schema['minimum']
         if schema.get('exclusiveMinimum'):
-            bounds['minimum'] += 1.0
+            bounds['min_vallue'] += 1.0
 
     if 'maximum' in schema:
-        bounds['maximum'] = schema['maximum']
+        bounds['max_value'] = schema['maximum']
         if schema.get('exclusiveMaximum'):
-            bounds['maximum'] -= 1.0
+            bounds['max_value'] -= 1.0
     return bounds
 
 
@@ -121,7 +121,7 @@ def _fuzz_number(
 ) -> SearchStrategy:
     # TODO: Handle all the optional qualifiers for numbers.
     # https://swagger.io/docs/specification/data-models/data-types/#numbers
-    bounds = _find_bounds(kwargs)
+    bounds = _find_bounds(parameter)
 
     return st.floats(**bounds)
 
@@ -132,7 +132,7 @@ def _fuzz_integer(
 ) -> SearchStrategy:
     # TODO: Handle all the optional qualifiers for numbers.
     # https://swagger.io/docs/specification/data-models/data-types/#numbers
-    bounds = _find_bounds(kwargs)
+    bounds = _find_bounds(parameter)
 
     return st.integers(**bounds)
 

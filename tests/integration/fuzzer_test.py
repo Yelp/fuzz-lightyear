@@ -84,6 +84,20 @@ def test_booleans(mock_client, is_required):
         assert_randomness(factory, [None, True, False])
 
 
+def test_integers(mock_client):
+    schema = {
+        'name': 'key',
+        'type': 'integer',
+        'minimum': 0,
+        'maximum': 3,
+        'exclusiveMaximum': True,
+    }
+
+    factory = fuzz_parameters([('key', schema,)])
+
+    assert_randomness(factory, [None, 0, 1, 2, ])
+
+
 class TestArray:
 
     def test_basic(self, mock_client):
