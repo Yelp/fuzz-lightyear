@@ -9,6 +9,7 @@ from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
 from swagger_spec_validator.common import SwaggerValidationError    # type: ignore
 
+from .datastore import get_setup_fixtures
 from .discovery import import_fixtures
 from .generator import generate_sequences
 from .output.interface import ResultFormatter
@@ -32,6 +33,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 1
 
     setup_fixtures(args.fixture)
+    run_user_defined_setup()
+
     outputter = run_tests(
         *args.test,
         iterations=args.iterations,
@@ -79,6 +82,11 @@ def setup_client(
 def setup_fixtures(fixtures: List[str]) -> None:
     for fixture_path in fixtures:
         import_fixtures(fixture_path)
+
+
+def run_user_defined_setup() -> None:
+    for function in get_setup_fixtures():
+        function()
 
 
 def run_tests(
