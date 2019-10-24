@@ -15,7 +15,7 @@ def non_vulnerable_operations(request):
     def get_exclusions():
         return request.param
 
-    fuzz_lightyear.exclusions.non_vulnerable_operations(get_exclusions)
+    fuzz_lightyear.exclude.non_vulnerable_operations(get_exclusions)
     yield
 
 

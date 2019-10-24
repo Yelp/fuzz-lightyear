@@ -38,11 +38,11 @@ from fuzz_lightyear.datastore import get_non_vulnerable_operations
     'exclusions_decorator, get_exclusions_function',
     [
         (
-            fuzz_lightyear.exclusions.operations,
+            fuzz_lightyear.exclude.operations,
             get_excluded_operations,
         ),
         (
-            fuzz_lightyear.exclusions.non_vulnerable_operations,
+            fuzz_lightyear.exclude.non_vulnerable_operations,
             get_non_vulnerable_operations,
         ),
     ],

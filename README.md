@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/Yelp/fuzz-lightyear.svg?branch=master)](https://travis-ci.com/Yelp/fuzz-lightyear)
+
 # fuzz-lightyear
 
 fuzz-lightyear is a [pytest-inspired](https://docs.pytest.org/en/latest/),
@@ -248,4 +250,47 @@ import fuzz_lightyear
 @fuzz_lightyear.setup
 def setup_function():
     print("This code will be executed before any tests are run")
+```
+
+### Including and excluding Swagger tags and operations
+
+We can use fixtures to control whether fuzz-lightyear fuzzes certain parts of
+the Swagger specification. This allows developers to only fuzz the parts
+of the specification that can be fuzzed in the test environment.
+
+```python
+import fuzz_lightyear
+
+@fuzz_lightyear.include.tags
+def get_tags_to_fuzz():
+    """fuzz_lightyear will only fuzz operations from
+    these tags.
+    """
+    return ['user', 'transactions']
+
+
+@fuzz_lightyear.exclude.operations
+def get_operations_to_exclude():
+    """fuzz_lightyear will not call these Swagger
+    operations.
+    """
+    return [
+        'get_user_id',
+        'operation_doesnt_work_in_test_environment',
+    ]
+
+
+@fuzz_lightyear.exclude.non_vulnerable_operations
+def get_non_vulnerable_operations():
+    """fuzz_lightyear will not check these Swagger
+    operations for vulnerabilities.
+
+    This is different from `fuzz_lightyear.exclude.operations`
+    in that these operations can still be executed by the
+    fuzzer to generate request sequences, but the vulnerability
+    plugins will not verify that these operations are secure.
+    """
+    # Accessing a user's public profile shouldn't require
+    # authentication.
+    return ['get_user_public_profile']
 ```
