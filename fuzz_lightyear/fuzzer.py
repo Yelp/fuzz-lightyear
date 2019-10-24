@@ -80,8 +80,8 @@ def _fuzz_parameter(
     if (
         # `name` check is used here as a heuristic to determine whether in
         # recursive call (arrays).
-        parameter.get('name') and
-        not required
+        parameter.get('name')
+        and not required
     ):
         return st.one_of(st.none(), strategy)
     return strategy
@@ -108,13 +108,32 @@ def _fuzz_string(
     return st.text()
 
 
+def _find_bounds(schema: Dict[str, Any]) -> Dict[str, Any]:
+    """If the schema specifies a maximum and minimum for the numeric value,
+       record it.
+       By default, maximums and minimums in swagger are not exclusive"""
+    bounds = {}
+    if 'minimum' in schema:
+        bounds['min_value'] = schema['minimum']
+        if schema.get('exclusiveMinimum'):
+            bounds['min_vallue'] += 1.0
+
+    if 'maximum' in schema:
+        bounds['max_value'] = schema['maximum']
+        if schema.get('exclusiveMaximum'):
+            bounds['max_value'] -= 1.0
+    return bounds
+
+
 def _fuzz_number(
     parameter: Dict[str, Any],
     **kwargs: Any,
 ) -> SearchStrategy:
     # TODO: Handle all the optional qualifiers for numbers.
     # https://swagger.io/docs/specification/data-models/data-types/#numbers
-    return st.floats()
+    bounds = _find_bounds(parameter)
+
+    return st.floats(**bounds)
 
 
 def _fuzz_integer(
@@ -123,7 +142,9 @@ def _fuzz_integer(
 ) -> SearchStrategy:
     # TODO: Handle all the optional qualifiers for numbers.
     # https://swagger.io/docs/specification/data-models/data-types/#numbers
-    return st.integers()
+    bounds = _find_bounds(parameter)
+
+    return st.integers(**bounds)
 
 
 def _fuzz_boolean(
