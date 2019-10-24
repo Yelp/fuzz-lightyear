@@ -26,7 +26,7 @@ def import_module_from_path(path: str) -> Optional[ModuleType]:
     :param path: path to python file to import
     """
     # I think this just needs to be unique.
-    module_name = path.rstrip('.py').replace('/', '.')
+    module_name = os.path.splitext(path)[0].replace('/', '.')
 
     spec = importlib.util.spec_from_file_location(
         module_name,
