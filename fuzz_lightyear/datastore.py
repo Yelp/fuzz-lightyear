@@ -11,6 +11,17 @@ from typing import Tuple
 
 
 @lru_cache(maxsize=1)
+def get_setup_fixtures() -> List:
+    """
+    This is a global list that contains the functions that should be executed
+    before fuzz-lightyear begins executing tests.
+
+    :rtype: list(function)
+    """
+    return []
+
+
+@lru_cache(maxsize=1)
 def get_user_defined_mapping() -> Dict:
     """
     This is essentially a global variable, within a function scope, because
@@ -96,8 +107,8 @@ def inject_user_defined_variables(func: Callable) -> Callable:
 
             value = mapping[arg_name]()
             if (
-                arg_name in type_annotations and
-                not isinstance(type_annotations[arg_name], type(List))
+                arg_name in type_annotations
+                and not isinstance(type_annotations[arg_name], type(List))
             ):
                 # If type annotations are used, use that to cast
                 # values for input.

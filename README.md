@@ -238,6 +238,20 @@ def attacker_factory():
     }
 ```
 
+### Setup Fixtures
+
+We can use setup fixtures to specify code that we'd like to run _before_ any
+tests are run. This allows developers to setup any custom configuration or
+external applications the test application relies on.
+
+```python
+import fuzz_lightyear
+
+@fuzz_lightyear.setup
+def setup_function():
+    print("This code will be executed before any tests are run")
+```
+
 ### Including and excluding Swagger tags and operations
 
 We can use fixtures to control whether fuzz-lightyear fuzzes certain parts of
@@ -246,7 +260,6 @@ of the specification that can be fuzzed in the test environment.
 
 ```python
 import fuzz_lightyear
-
 
 @fuzz_lightyear.include.tags
 def get_tags_to_fuzz():
