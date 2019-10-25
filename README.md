@@ -38,8 +38,8 @@ pip install fuzz-lightyear
 
 ```
 $ fuzz-lightyear -h
-usage: fuzz-lightyear [-h] [-v] [-n [ITERATIONS]] [--schema SCHEMA] [-f FIXTURE]
-                   [--seed SEED]
+usage: fuzz-lightyear [-h] [-v] [--version] [-n [ITERATIONS]] [--schema SCHEMA]
+                   [-f FIXTURE] [--seed SEED] [-t TEST] [--ignore-exceptions]
                    url
 
 positional arguments:
@@ -48,6 +48,7 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -v, --verbose         Increase the verbosity of logging.
+  --version             Displays version information.
   -n [ITERATIONS], --iterations [ITERATIONS]
                         Maximum request sequence length to fuzz.
   --schema SCHEMA       Path to local swagger schema. If provided, this
@@ -55,6 +56,9 @@ optional arguments:
   -f FIXTURE, --fixture FIXTURE
                         Path to custom specified fixtures.
   --seed SEED           Specify seed for generation of random output.
+  -t TEST, --test TEST  Specifies a single test to run.
+  --ignore-exceptions   Ignores all exceptions raised during fuzzing (aka.
+                        only fails when vulnerabilities are found).
 ```
 
 ## Fixtures
