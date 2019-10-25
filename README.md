@@ -39,7 +39,7 @@ pip install fuzz-lightyear
 ```
 $ fuzz-lightyear -h
 usage: fuzz-lightyear [-h] [-v] [-n [ITERATIONS]] [--schema SCHEMA] [-f FIXTURE]
-                   [--seed SEED]
+                   [--seed SEED] [--disable-unicode]
                    url
 
 positional arguments:
@@ -55,6 +55,8 @@ optional arguments:
   -f FIXTURE, --fixture FIXTURE
                         Path to custom specified fixtures.
   --seed SEED           Specify seed for generation of random output.
+
+  --disable-unicode     Disable unicode characters in fuzzing, only use ASCII.
 ```
 
 ## Fixtures
