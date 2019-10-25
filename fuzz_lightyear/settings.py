@@ -10,14 +10,6 @@ class Settings:
         self.unicode_enabled = True            # type: bool
 
     @property
-    def unicode_enabled(self) -> bool:
-        return self._unicode_enabled
-
-    @unicode_enabled.setter
-    def unicode_enabled(self, value: bool) -> None:
-        self._unicode_enabled = value
-
-    @property
     def seed(self) -> int:
         return self._seed
 

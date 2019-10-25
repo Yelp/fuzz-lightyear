@@ -108,7 +108,7 @@ def _fuzz_string(
     if parameter.get('required', required):
         kwargs['min_size'] = 1
     if not get_settings().unicode_enabled:
-        kwargs['alphabet'] = string.ascii_letters
+        kwargs['alphabet'] = string.printable
 
     return st.text(**kwargs)
 
