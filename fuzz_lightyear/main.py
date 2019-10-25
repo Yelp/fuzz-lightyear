@@ -40,6 +40,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         iterations=args.iterations,
         seed=args.seed,
         ignore_exceptions=args.ignore_exceptions,
+        disable_unicode=args.disable_unicode,
     )
 
     outputter.show_results()
@@ -94,6 +95,7 @@ def run_tests(
     iterations: int = 1,
     seed: int = None,
     ignore_exceptions: bool = False,
+    disable_unicode: bool = False,
 ) -> ResultFormatter:
     """
     :param tests: list of tests to run.
@@ -102,9 +104,12 @@ def run_tests(
     :param iterations: size of request sequence to generate.
     :param seed: used for random generation of test input
     :param ignore_exceptions: if True, ignores HTTP exceptions to requests.
+    :param disable_unicode: if True, only use ASCII characters to fuzz strings
     """
     if seed is not None:
         get_settings().seed = seed
+    if disable_unicode:
+        get_settings().unicode_enabled = False
 
     outputter = ResultFormatter()
     for result in generate_sequences(

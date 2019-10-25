@@ -79,6 +79,15 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         ),
     )
 
+    parser.add_argument(
+        '--disable-unicode',
+        action='store_true',
+        help=(
+            'Disable fuzzing with unicode strings (only use ascii characters to '
+            'fuzz strings).'
+        ),
+    )
+
     return parser.parse_args(argv)
 
 
