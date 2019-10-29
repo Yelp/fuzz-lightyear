@@ -14,6 +14,7 @@ from bravado_core.param import get_param_type_spec      # type: ignore
 from cached_property import cached_property             # type: ignore
 from hypothesis.searchstrategy.strategies import SearchStrategy
 
+from .datastore import get_post_fuzz_hooks
 from .fuzzer import fuzz_parameters
 from .output.logging import log
 from .output.util import print_warning
@@ -143,7 +144,8 @@ class FuzzingRequest:
 
         # Empty dictionary means we're not sending parameters.
         if self.fuzzed_input is None:
-            self.fuzzed_input = self.fuzz(data)
+            fuzzed_input = self.fuzz(data)
+            self.fuzzed_input = self.apply_post_fuzz_hooks(fuzzed_input)
 
         if not auth:
             auth = get_victim_session_factory()()
@@ -200,6 +202,19 @@ class FuzzingRequest:
 
             if value is not None:
                 fuzzed_input[key] = value
+
+        return fuzzed_input
+
+    def apply_post_fuzz_hooks(self, fuzzed_input: Dict[str, Any]) -> Dict[str, Any]:
+        """After parameters for a request are fuzzed, this function
+        applies developer-supplied post-fuzz hooks to the fuzzed
+        input.
+
+        :param fuzzed_input: The initial fuzz result from `self.fuzz`.
+        """
+        hooks = get_post_fuzz_hooks(self.operation_id, self.tag)
+        for hook in hooks:
+            fuzzed_input = hook(fuzzed_input)
 
         return fuzzed_input
 

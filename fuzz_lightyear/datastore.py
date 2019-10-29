@@ -10,6 +10,17 @@ from typing import Set
 from typing import Tuple
 
 
+def get_post_fuzz_hooks(
+    operation_id: str,
+    tag: Optional[str] = None,
+) -> List[Callable[[Dict[str, Any]], Dict[str, Any]]]:
+    """Returns a list of functions that should be applied
+    to fuzzed data for the input operation.
+    """
+    # TODO: actually fill this in
+    return []
+
+
 @lru_cache(maxsize=1)
 def get_setup_fixtures() -> List:
     """
