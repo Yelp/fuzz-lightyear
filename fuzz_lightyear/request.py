@@ -143,37 +143,7 @@ class FuzzingRequest:
 
         # Empty dictionary means we're not sending parameters.
         if self.fuzzed_input is None:
-            if not self._fuzzed_input_factory:
-                parameters = []
-                for name, param in self._swagger_operation.params.items():
-                    specification = get_param_type_spec(param).copy()
-                    if param.location == 'body':
-                        # For 'body' parameters, bravado discards information from the
-                        # param spec itself. We pass in the 'required' parameter in this
-                        # case.
-                        # For the 'name' argument (seeing that body parameters can be
-                        # named differently), we pass it in separately as it breaks the
-                        # swagger specification if we group it together.
-                        specification['required'] = param.required
-
-                    parameters.append((name, specification,))
-
-                self._fuzzed_input_factory = fuzz_parameters(parameters)
-
-            # NOTE: If we were really worried about performance later on,
-            #       we might be able to address this. Specifically, we don't
-            #       *need* to generate examples, just to throw it away later
-            #       if the key is already in data.
-            #       However, this involves parameter modification, which may
-            #       require a more involved change.
-            self.fuzzed_input = {}
-            for key, value in self._fuzzed_input_factory.example().items():
-                if key in data:
-                    self.fuzzed_input[key] = data[key]
-                    continue
-
-                if value is not None:
-                    self.fuzzed_input[key] = value
+            self.fuzzed_input = self.fuzz(data)
 
         if not auth:
             auth = get_victim_session_factory()()
@@ -194,6 +164,44 @@ class FuzzingRequest:
             **auth,
             **kwargs
         )
+
+    def fuzz(self, existing_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Returns a dictionary of values which can be used
+        to call the operation being fuzzed.
+        """
+        if not self._fuzzed_input_factory:
+            parameters = []
+            for name, param in self._swagger_operation.params.items():
+                specification = get_param_type_spec(param).copy()
+                if param.location == 'body':
+                    # For 'body' parameters, bravado discards information from the
+                    # param spec itself. We pass in the 'required' parameter in this
+                    # case.
+                    # For the 'name' argument (seeing that body parameters can be
+                    # named differently), we pass it in separately as it breaks the
+                    # swagger specification if we group it together.
+                    specification['required'] = param.required
+
+                parameters.append((name, specification,))
+
+            self._fuzzed_input_factory = fuzz_parameters(parameters)
+
+        # NOTE: If we were really worried about performance later on,
+        #       we might be able to address this. Specifically, we don't
+        #       *need* to generate examples, just to throw it away later
+        #       if the key is already in data.
+        #       However, this involves parameter modification, which may
+        #       require a more involved change.
+        fuzzed_input = {}
+        for key, value in self._fuzzed_input_factory.example().items():
+            if key in existing_data:
+                fuzzed_input[key] = existing_data[key]
+                continue
+
+            if value is not None:
+                fuzzed_input[key] = value
+
+        return fuzzed_input
 
     @cached_property        # type: ignore
     def _swagger_operation(self) -> CallableOperation:
