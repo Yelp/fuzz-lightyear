@@ -1,4 +1,5 @@
 import inspect
+from collections import defaultdict
 from functools import lru_cache
 from functools import wraps
 from typing import Any
@@ -10,15 +11,50 @@ from typing import Set
 from typing import Tuple
 
 
+# These are module variables which contain the post-fuzz hooks
+# which have been registered. Each global allows fuzz_lightyear
+# to get a list applicable to a certain operation or tag.
+_POST_FUZZ_HOOKS_BY_OPERATION = defaultdict(set)  # type: Dict[str, Set[Callable]]
+_POST_FUZZ_HOOKS_BY_TAG = defaultdict(set)  # type: Dict[str, Set[Callable]]
+
+
+def register_post_fuzz_hook(
+    hook: Callable[[Dict[str, Any]], Dict[str, Any]],
+    operation_ids: Optional[List[str]] = None,
+    tags: Optional[List[str]] = None,
+) -> None:
+    """Adds a post-fuzz hook to fuzz_lightyear's store of post-fuzz
+    hooks.
+
+    :param hook: The hook.
+    :param operation_ids: A list of operations that the input hook
+    applies to.
+    :param tags: A list of Swagger tags that the input hook applies
+    to.
+    """
+    if not operation_ids:
+        operation_ids = []
+
+    if not tags:
+        tags = []
+
+    for operation_id in operation_ids:
+        _POST_FUZZ_HOOKS_BY_OPERATION[operation_id].add(hook)
+
+    for tag in tags:
+        _POST_FUZZ_HOOKS_BY_TAG[tag].add(hook)
+
+
 def get_post_fuzz_hooks(
     operation_id: str,
     tag: Optional[str] = None,
-) -> List[Callable[[Dict[str, Any]], Dict[str, Any]]]:
-    """Returns a list of functions that should be applied
-    to fuzzed data for the input operation.
+) -> List[Callable[[Dict], Dict]]:
+    """Returns a list of functions that should be applied to fuzzed
+    data for the input operation.
     """
-    # TODO: actually fill this in
-    return []
+    operation_hooks = _POST_FUZZ_HOOKS_BY_OPERATION[operation_id]
+    tag_hooks = _POST_FUZZ_HOOKS_BY_TAG[tag] if tag else set()
+    return list(operation_hooks.union(tag_hooks))
 
 
 @lru_cache(maxsize=1)
