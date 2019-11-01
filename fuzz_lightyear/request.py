@@ -155,16 +155,15 @@ class FuzzingRequest:
 
         _merge_auth_headers(self.fuzzed_input, auth)
 
+        # auth details should override fuzzed_input, because
+        # specifics should always override randomly generated content
+        kwargs = _merge_kwargs(self.fuzzed_input, auth, kwargs)
+
         return get_abstraction().request_method(
             operation_id=self.operation_id,
             tag=self.tag,
             *args,
-            **self.fuzzed_input,
-
-            # auth details should override fuzzed_input, because specifics should always
-            # override randomly generated content.
-            **auth,
-            **kwargs
+            **kwargs,
         )
 
     def fuzz(self, existing_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -260,3 +259,20 @@ def _merge_auth_headers(fuzzed_params: Dict[str, Any], auth: Dict[str, Any]) -> 
         key = key.replace('-', '_')
         if key in fuzzed_params:
             fuzzed_params.pop(key)
+
+
+def _merge_kwargs(*args: Any) -> Dict[str, Any]:
+    """Merges the input dictionaries into a single dictionary which
+    can be used in a fuzzing request."""
+
+    # Merge headers first, then top-level parameters.
+    headers = {}  # type: Dict[str, str]
+    for dictionary in args:
+        headers.update(dictionary.get('_request_options', {}).get('headers', {}))
+
+    output = {}  # type: Dict[str, Any]
+    for dictionary in args:
+        output.update(dictionary)
+
+    output.get('_request_options', {})['headers'] = headers
+    return output

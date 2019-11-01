@@ -1,5 +1,6 @@
 import pytest
 
+import fuzz_lightyear
 from fuzz_lightyear.request import FuzzingRequest
 from fuzz_lightyear.supplements.abstraction import get_abstraction
 from testing.mock_server import URL
@@ -100,3 +101,26 @@ def test_fuzzed_request(tag, id, mock_client):
     response = request.send()
 
     assert response.value == 'ok'
+
+
+def test_post_fuzz_hook(mock_client):
+    def post_fuzz_hook(fuzzed_input):
+        new_input = fuzzed_input.copy()
+        if '_request_options' not in new_input:
+            new_input['_request_options'] = {}
+
+        if 'headers' not in new_input['_request_options']:
+            new_input['_request_options']['headers'] = {}
+
+        new_input['_request_options']['headers']['__test__'] = 'test'
+        return new_input
+
+    fuzz_lightyear.hooks.post_fuzz(tags='types')(post_fuzz_hook)
+
+    request = FuzzingRequest(
+        operation_id='get_expect_primitives',
+        tag='types',
+    )
+
+    request.send()
+    assert request.fuzzed_input['_request_options']['headers']['__test__'] == 'test'
