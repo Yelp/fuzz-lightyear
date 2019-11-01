@@ -298,3 +298,31 @@ def get_non_vulnerable_operations():
     # authentication.
     return ['get_user_public_profile']
 ```
+
+### Post-fuzz hooks
+
+Sometimes factory fixtures and random fuzzing are not sufficient to
+build a valid request. For example, the API could have an undeclared
+required header, and it is unfeasible to add the header to the
+Swagger spec. In this case, we can use post-fuzz hooks to transform
+fuzzed data to a valid form.
+
+```python
+@fuzz_lightyear.hooks.post_fuzz(
+    tags='user',
+    operations='some_function',
+)
+def apply_nonce(fuzzed_data: Dict[str, Any]) -> Dict[str, Any]:
+    """This hook creates and adds a nonce to any request against
+    operations with the 'user' tag, and additionally to the
+    'some_function' operation.
+    """
+    nonce = make_nonce()
+
+    new_data = fuzzed_data.copy()
+    if '_request_options' not in new_data:
+        new_data['_request_options'] = {}
+
+    new_data['_request_options']['nonce'] = nonce
+    return new_data
+```
