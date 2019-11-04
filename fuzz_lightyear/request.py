@@ -274,5 +274,12 @@ def _merge_kwargs(*args: Any) -> Dict[str, Any]:
     for dictionary in args:
         output.update(dictionary)
 
-    output.get('_request_options', {})['headers'] = headers
+    if not headers:
+        return output
+
+    if not output['_request_options']:
+        output['_request_options'] = {}
+
+    output['_request_options']['headers'] = headers
+
     return output
