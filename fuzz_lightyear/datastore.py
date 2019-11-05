@@ -32,6 +32,9 @@ def register_post_fuzz_hook(
     :param tags: A list of Swagger tags that the input hook applies
     to.
     """
+    if not operation_ids and not tags:
+        operation_ids = ['*']
+
     if not operation_ids:
         operation_ids = []
 
@@ -52,7 +55,9 @@ def get_post_fuzz_hooks(
     """Returns a list of functions that should be applied to fuzzed
     data for the input operation.
     """
-    operation_hooks = _POST_FUZZ_HOOKS_BY_OPERATION[operation_id]
+    operation_hooks = _POST_FUZZ_HOOKS_BY_OPERATION[operation_id].union(
+        _POST_FUZZ_HOOKS_BY_OPERATION['*'],
+    )
     tag_hooks = _POST_FUZZ_HOOKS_BY_TAG[tag] if tag else set()
     return list(operation_hooks.union(tag_hooks))
 

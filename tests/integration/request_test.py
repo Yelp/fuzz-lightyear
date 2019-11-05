@@ -103,7 +103,20 @@ def test_fuzzed_request(tag, id, mock_client):
     assert response.value == 'ok'
 
 
-def test_post_fuzz_hook(mock_client):
+@pytest.mark.parametrize(
+    'decorator_args, fuzzing_request_args',
+    [
+        (
+            {'tags': 'types'},
+            {'operation_id': 'get_expect_primitives', 'tag': 'types'},
+        ),
+        (
+            {},
+            {'operation_id': 'get_expect_primitives', 'tag': 'types'},
+        ),
+    ],
+)
+def test_post_fuzz_hook(mock_client, decorator_args, fuzzing_request_args):
     def post_fuzz_hook(fuzzed_input):
         new_input = fuzzed_input.copy()
         if '_request_options' not in new_input:
@@ -115,12 +128,8 @@ def test_post_fuzz_hook(mock_client):
         new_input['_request_options']['headers']['__test__'] = 'test'
         return new_input
 
-    fuzz_lightyear.hooks.post_fuzz(tags='types')(post_fuzz_hook)
-
-    request = FuzzingRequest(
-        operation_id='get_expect_primitives',
-        tag='types',
-    )
+    fuzz_lightyear.hooks.post_fuzz(**decorator_args)(post_fuzz_hook)
+    request = FuzzingRequest(**fuzzing_request_args)
 
     request.send()
     assert request.fuzzed_input['_request_options']['headers']['__test__'] == 'test'
