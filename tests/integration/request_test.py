@@ -117,7 +117,7 @@ def test_fuzzed_request(tag, id, mock_client):
     ],
 )
 def test_post_fuzz_hook(mock_client, decorator_args, fuzzing_request_args):
-    def post_fuzz_hook(fuzzed_input):
+    def post_fuzz_hook(operation, fuzzed_input):
         new_input = fuzzed_input.copy()
         if '_request_options' not in new_input:
             new_input['_request_options'] = {}

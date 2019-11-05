@@ -15,7 +15,7 @@ class TestPostFuzzHooks:
         ),
     )
     def test_registering_hooks_by_operation(self, num_post_fuzz_hooks, operation_ids):
-        post_fuzz_hooks = {lambda x: x for __ in range(num_post_fuzz_hooks)}
+        post_fuzz_hooks = {lambda x, y: y for __ in range(num_post_fuzz_hooks)}
 
         for hook in post_fuzz_hooks:
             register_post_fuzz_hook(hook, operation_ids=operation_ids)
@@ -24,8 +24,8 @@ class TestPostFuzzHooks:
             assert set(get_post_fuzz_hooks(operation_id)) == post_fuzz_hooks
 
     def test_registering_hooks_all_operations(self):
-        def hook(x):
-            return x
+        def hook(x, y):
+            return y
         register_post_fuzz_hook(hook=hook)
 
         assert set(get_post_fuzz_hooks('random_operation')) == set([hook])

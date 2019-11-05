@@ -10,16 +10,21 @@ from typing import Optional
 from typing import Set
 from typing import Tuple
 
+from bravado.client import CallableOperation
+
+
+PostFuzzHook = Callable[[CallableOperation, Dict[str, Any]], Dict[str, Any]]
+
 
 # These are module variables which contain the post-fuzz hooks
 # which have been registered. Each global allows fuzz_lightyear
 # to get a list applicable to a certain operation or tag.
-_POST_FUZZ_HOOKS_BY_OPERATION = defaultdict(set)  # type: Dict[str, Set[Callable]]
-_POST_FUZZ_HOOKS_BY_TAG = defaultdict(set)  # type: Dict[str, Set[Callable]]
+_POST_FUZZ_HOOKS_BY_OPERATION = defaultdict(set)  # type: Dict[str, Set[PostFuzzHook]]
+_POST_FUZZ_HOOKS_BY_TAG = defaultdict(set)  # type: Dict[str, Set[PostFuzzHook]]
 
 
 def register_post_fuzz_hook(
-    hook: Callable[[Dict[str, Any]], Dict[str, Any]],
+    hook: PostFuzzHook,
     operation_ids: Optional[List[str]] = None,
     tags: Optional[List[str]] = None,
 ) -> None:
@@ -51,7 +56,7 @@ def register_post_fuzz_hook(
 def get_post_fuzz_hooks(
     operation_id: str,
     tag: Optional[str] = None,
-) -> List[Callable[[Dict], Dict]]:
+) -> List[PostFuzzHook]:
     """Returns a list of functions that should be applied to fuzzed
     data for the input operation.
     """

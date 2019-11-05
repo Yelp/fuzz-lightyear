@@ -213,7 +213,10 @@ class FuzzingRequest:
         """
         hooks = get_post_fuzz_hooks(self.operation_id, self.tag)
         for hook in hooks:
-            fuzzed_input = hook(fuzzed_input)
+            fuzzed_input = hook(
+                self._swagger_operation,
+                fuzzed_input,
+            )
 
         return fuzzed_input
 

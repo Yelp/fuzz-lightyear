@@ -312,7 +312,10 @@ fuzzed data to a valid form.
     tags='user',
     operations='some_function',
 )
-def apply_nonce(fuzzed_data: Dict[str, Any]) -> Dict[str, Any]:
+def apply_nonce(
+    operation: bravado.client.CallableOperation,
+    fuzzed_data: Dict[str, Any],
+) -> Dict[str, Any]:
     """This hook creates and adds a nonce to any request against
     operations with the 'user' tag, and additionally to the
     'some_function' operation.
