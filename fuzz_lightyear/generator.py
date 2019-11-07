@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Iterator
 from typing import List
 from typing import Optional
@@ -55,7 +56,7 @@ def generate_sequences(
     #       (rather than starting operation), so that it's clearer for
     #       output.
     client = get_abstraction().client
-
+    _generate_request_graph(n)
     for tag_group in get_fuzzable_tags(client):
         last_results = []   # type: List
         for _ in range(n):
@@ -116,6 +117,29 @@ def _add_request_to_sequence(
     return output
 
 
+def _generate_request_graph(n: int) -> None:
+    """
+    :param n: max length of the request sequence, or the max length of a path from a node
+    Generates a directed graph
+    """
+    client = get_abstraction().client
+    produces = defaultdict(list)
+    consumes = defaultdict(list)
+
+    for tag_group in dir(client):
+        for operation_id in dir(getattr(client, tag_group)):
+            operation = getattr(getattr(client, tag_group), operation_id).operation
+            responses = operation.op_spec.get('responses', {}).get('200', {})
+            if responses:
+                response_params = list(
+                    responses.get('schema', {}).get('properties', {}).keys(),
+                )
+            for response_param in response_params:
+                produces[response_param].append(operation_id)
+
+            consumes[operation_id] = list(operation.params.keys())
+
+
 def _generate_requests(tag_group: str) -> Iterator[FuzzingRequest]:
     """
     Generates requests based on the client's Swagger specification.
@@ -124,7 +148,6 @@ def _generate_requests(tag_group: str) -> Iterator[FuzzingRequest]:
     """
     client = get_abstraction().client
     excluded_operations = get_excluded_operations()
-
     for operation_id in dir(getattr(client, tag_group)):
         if operation_id in excluded_operations:
             expected_tag = excluded_operations[operation_id]
