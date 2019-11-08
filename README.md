@@ -38,8 +38,10 @@ pip install fuzz-lightyear
 
 ```
 $ fuzz-lightyear -h
+
 usage: fuzz-lightyear [-h] [-v] [--version] [-n [ITERATIONS]] [--schema SCHEMA]
                    [-f FIXTURE] [--seed SEED] [-t TEST] [--ignore-exceptions]
+                   [--disable-unicode]
                    url
 
 positional arguments:
@@ -59,6 +61,8 @@ optional arguments:
   -t TEST, --test TEST  Specifies a single test to run.
   --ignore-exceptions   Ignores all exceptions raised during fuzzing (aka.
                         only fails when vulnerabilities are found).
+  --disable-unicode     Disable unicode characters in fuzzing, only use ASCII.
+
 ```
 
 ## Fixtures

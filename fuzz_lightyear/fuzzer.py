@@ -12,6 +12,7 @@ from swagger_spec_validator.common import SwaggerValidationError    # type: igno
 
 from .datastore import get_user_defined_mapping
 from .output.logging import log
+from .settings import get_settings
 
 
 def fuzz_parameters(
@@ -102,10 +103,14 @@ def _fuzz_string(
 
     # TODO: Handle a bunch of swagger string formats.
     # https://swagger.io/docs/specification/data-models/data-types/#string
-    if parameter.get('required', required):
-        return st.text(min_size=1)
+    kwargs = {}                                     # type: Dict[str, Any]
 
-    return st.text()
+    if parameter.get('required', required):
+        kwargs['min_size'] = 1
+    if not get_settings().unicode_enabled:
+        kwargs['alphabet'] = string.printable
+
+    return st.text(**kwargs)
 
 
 def _find_bounds(schema: Dict[str, Any]) -> Dict[str, Any]:
