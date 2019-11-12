@@ -22,6 +22,23 @@ If you love `fuzz-lightyear`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### 0.0.4
+
+##### :tada: New Features
+
+- Add a setup fixture decorator `@fuzz_lightyear.setup` which is run before fuzzing ([#32])
+- Add a `--disable-unicode` flag to only fuzz ASCII strings for Swagger strings ([#34])
+- Support post-fuzz hooks, decorated by `@fuzz_lightyear.hooks.post_fuzz(**args)`,
+which transform fuzzed input ([#36])
+
+##### :sparkles: Usability
+
+- Fuzzer now respects min and max constraints on Swagger numerics ([#31])
+
+##### :bug: Bug Fixes
+
+- Fix dynamic fixture imports for modules which end in `(\.py)+` ([#33])
+
 ### 0.0.3
 ##### October 18, 2019
 
