@@ -1,4 +1,5 @@
 from collections import defaultdict
+from functools import lru_cache
 from typing import Dict
 from typing import Iterator
 from typing import List
@@ -69,8 +70,8 @@ def generate_sequences(
                 if (
                     tests and not
                     (
-                        sequence[-1].id in tests or
-                        sequence[-1].tag in tests
+                        sequence[-1].id in tests
+                        or sequence[-1].tag in tests
                     )
                 ):
                     continue
@@ -120,6 +121,7 @@ def _add_request_to_sequence(
     return output
 
 
+@lru_cache(maxsize=1)
 def _generate_request_graph() -> Dict[str, set]:
     """
     Generates a directed graph, represented as an adjacency list.
