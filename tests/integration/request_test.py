@@ -104,19 +104,31 @@ def test_fuzzed_request(tag, id, mock_client):
 
 
 @pytest.mark.parametrize(
-    'decorator_args, fuzzing_request_args',
+    'decorator_args, fuzzing_request_args, expected_headers',
     [
         (
             {'tags': 'types'},
             {'operation_id': 'get_expect_primitives', 'tag': 'types'},
+            {'__test__': 'test'},
         ),
         (
             {},
             {'operation_id': 'get_expect_primitives', 'tag': 'types'},
+            {'__test__': 'test'},
+        ),
+        (
+            {'tags': 'numbers'},
+            {'operation_id': 'get_expect_primitives', 'tag': 'types'},
+            {},
         ),
     ],
 )
-def test_post_fuzz_hook(mock_client, decorator_args, fuzzing_request_args):
+def test_post_fuzz_hook(
+    mock_client,
+    decorator_args,
+    fuzzing_request_args,
+    expected_headers,
+):
     def post_fuzz_hook(operation, fuzzed_input):
         if '_request_options' not in fuzzed_input:
             fuzzed_input['_request_options'] = {}
@@ -130,7 +142,8 @@ def test_post_fuzz_hook(mock_client, decorator_args, fuzzing_request_args):
     request = FuzzingRequest(**fuzzing_request_args)
 
     request.send()
-    assert request.fuzzed_input['_request_options']['headers']['__test__'] == 'test'
+    request_headers = request.fuzzed_input.get('_request_options', {}).get('headers', {})
+    assert request_headers == expected_headers
 
 
 @pytest.mark.parametrize(
@@ -167,5 +180,6 @@ def test_multiple_post_fuzz_hooks(mock_client, decorator_args, fuzzing_request_a
 
     request.send()
 
-    assert request.fuzzed_input['_request_options']['headers']['__a__'] == 'a'
-    assert request.fuzzed_input['_request_options']['headers']['__b__'] == 'b'
+    request_headers = request.fuzzed_input.get('_request_options', {}).get('headers', {})
+    assert request_headers['__a__'] == 'a'
+    assert request_headers['__b__'] == 'b'
