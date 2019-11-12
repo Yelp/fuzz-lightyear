@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Dict
 from typing import Iterator
 from typing import List
 from typing import Optional
@@ -56,12 +57,14 @@ def generate_sequences(
     #       (rather than starting operation), so that it's clearer for
     #       output.
     client = get_abstraction().client
-    _generate_request_graph(n)
+    request_graph = _generate_request_graph()
     for tag_group in get_fuzzable_tags(client):
         last_results = []   # type: List
         for _ in range(n):
             good_sequences = []
-            for sequence in _add_request_to_sequence(tag_group, last_results):
+            for sequence in _add_request_to_sequence(
+                tag_group, last_results, request_graph,
+            ):
                 # TODO: We can probably modify this algorithm to be better.
                 if (
                     tests and not
@@ -84,7 +87,11 @@ def generate_sequences(
 def _add_request_to_sequence(
     tag_group: str,
     seed: Optional[List[List[FuzzingRequest]]] = None,
+    request_graph: Dict[str, set] = {},
 ) -> List[List[FuzzingRequest]]:
+    """
+    :returns output: list of request sequences
+    """
     client = get_abstraction().client
 
     if not seed:
@@ -98,7 +105,9 @@ def _add_request_to_sequence(
         for tag_group in dir(client):
             for request in _generate_requests(tag_group):
                 # Attempt to add every single permutation first.
-                new_sequence = sequence + [request]
+                preceding_requests = request_graph[request.operation_id]
+                if any([req.operation_id in preceding_requests for req in sequence]):
+                    new_sequence = sequence + [request]
 
                 # TODO: sequence pruning. We would get a lot better results if
                 #       we only added a request that consumes resources that
@@ -112,19 +121,22 @@ def _add_request_to_sequence(
                 #
                 #       This means, we need to do all permutations, because we
                 #       can't possibly know whether to eagerly prune.
-                output.append(new_sequence)
+                    output.append(new_sequence)
 
     return output
 
 
-def _generate_request_graph(n: int) -> None:
+def _generate_request_graph() -> Dict[str, set]:
     """
-    :param n: max length of the request sequence, or the max length of a path from a node
-    Generates a directed graph
+    Generates a directed graph, represented as an adjacency list.
+
+    Every node in the graph is an operation_id, and an edge between two nodes
+    A and B means that node A consumes a resource that node B produces.
+
     """
     client = get_abstraction().client
-    produces = defaultdict(list)
-    consumes = defaultdict(list)
+    produces = defaultdict(list)  # type: Dict[str, List[str]]
+    consumes = defaultdict(list)  # type: Dict[str, List[str]]
 
     for tag_group in dir(client):
         for operation_id in dir(getattr(client, tag_group)):
@@ -138,6 +150,20 @@ def _generate_request_graph(n: int) -> None:
                 produces[response_param].append(operation_id)
 
             consumes[operation_id] = list(operation.params.keys())
+
+    request_graph = defaultdict(set)  # type: Dict[str, set]
+
+    # This would be a graph that maps producing operations -> to consuming operations
+    # for consuming_op, params in consumes.items():
+    #    for param in params:
+    #        for producing_op in produces[param]:
+    #            request_graph[producing_op].append(consuming_op)
+
+    for consuming_op, params in consumes.items():
+        for param in params:
+            request_graph[consuming_op].update(produces[param])
+
+    return request_graph
 
 
 def _generate_requests(tag_group: str) -> Iterator[FuzzingRequest]:
