@@ -323,3 +323,5 @@ def apply_nonce(
     nonce = make_nonce()
     fuzzed_data['nonce'] = nonce
 ```
+
+Note: The order in which these hooks are run is not guaranteed.
