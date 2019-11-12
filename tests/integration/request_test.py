@@ -131,3 +131,41 @@ def test_post_fuzz_hook(mock_client, decorator_args, fuzzing_request_args):
 
     request.send()
     assert request.fuzzed_input['_request_options']['headers']['__test__'] == 'test'
+
+
+@pytest.mark.parametrize(
+    'decorator_args, fuzzing_request_args',
+    [
+        (
+            {},
+            {'operation_id': 'get_expect_primitives', 'tag': 'types'},
+        ),
+    ],
+)
+def test_multiple_post_fuzz_hooks(mock_client, decorator_args, fuzzing_request_args):
+    def post_fuzz_hook_a(operation, fuzzed_input):
+        if '_request_options' not in fuzzed_input:
+            fuzzed_input['_request_options'] = {}
+
+        if 'headers' not in fuzzed_input['_request_options']:
+            fuzzed_input['_request_options']['headers'] = {}
+
+        fuzzed_input['_request_options']['headers']['__a__'] = 'a'
+
+    def post_fuzz_hook_b(operation, fuzzed_input):
+        if '_request_options' not in fuzzed_input:
+            fuzzed_input['_request_options'] = {}
+
+        if 'headers' not in fuzzed_input['_request_options']:
+            fuzzed_input['_request_options']['headers'] = {}
+
+        fuzzed_input['_request_options']['headers']['__b__'] = 'b'
+
+    fuzz_lightyear.hooks.post_fuzz(**decorator_args)(post_fuzz_hook_a)
+    fuzz_lightyear.hooks.post_fuzz(**decorator_args)(post_fuzz_hook_b)
+    request = FuzzingRequest(**fuzzing_request_args)
+
+    request.send()
+
+    assert request.fuzzed_input['_request_options']['headers']['__a__'] == 'a'
+    assert request.fuzzed_input['_request_options']['headers']['__b__'] == 'b'
