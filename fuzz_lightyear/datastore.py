@@ -13,7 +13,7 @@ from typing import Tuple
 from bravado.client import CallableOperation
 
 
-PostFuzzHook = Callable[[CallableOperation, Dict[str, Any]], Dict[str, Any]]
+PostFuzzHook = Callable[[CallableOperation, Dict[str, Any]], None]
 
 
 # These are module variables which contain the post-fuzz hooks

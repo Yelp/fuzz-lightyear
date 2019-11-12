@@ -118,15 +118,13 @@ def test_fuzzed_request(tag, id, mock_client):
 )
 def test_post_fuzz_hook(mock_client, decorator_args, fuzzing_request_args):
     def post_fuzz_hook(operation, fuzzed_input):
-        new_input = fuzzed_input.copy()
-        if '_request_options' not in new_input:
-            new_input['_request_options'] = {}
+        if '_request_options' not in fuzzed_input:
+            fuzzed_input['_request_options'] = {}
 
-        if 'headers' not in new_input['_request_options']:
-            new_input['_request_options']['headers'] = {}
+        if 'headers' not in fuzzed_input['_request_options']:
+            fuzzed_input['_request_options']['headers'] = {}
 
-        new_input['_request_options']['headers']['__test__'] = 'test'
-        return new_input
+        fuzzed_input['_request_options']['headers']['__test__'] = 'test'
 
     fuzz_lightyear.hooks.post_fuzz(**decorator_args)(post_fuzz_hook)
     request = FuzzingRequest(**fuzzing_request_args)

@@ -315,17 +315,11 @@ fuzzed data to a valid form.
 def apply_nonce(
     operation: bravado.client.CallableOperation,
     fuzzed_data: Dict[str, Any],
-) -> Dict[str, Any]:
+) -> None:
     """This hook creates and adds a nonce to any request against
     operations with the 'user' tag, and additionally to the
     'some_function' operation.
     """
     nonce = make_nonce()
-
-    new_data = fuzzed_data.copy()
-    if '_request_options' not in new_data:
-        new_data['_request_options'] = {}
-
-    new_data['_request_options']['nonce'] = nonce
-    return new_data
+    fuzzed_data['nonce'] = nonce
 ```
