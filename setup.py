@@ -26,8 +26,6 @@ setup(
     packages=find_packages(exclude=(['test*', 'tmp*'])),
     version=VERSION,
     description='Vulnerability Discovery through Stateful Swagger Fuzzing',
-    long_description=open(local_file('README.md')).read(),
-    long_description_content_type='text/markdown',
     license='Copyright Yelp, Inc. 2019',
     author=', '.join([
         'Aaron Loo <aaronloo@yelp.com>',
