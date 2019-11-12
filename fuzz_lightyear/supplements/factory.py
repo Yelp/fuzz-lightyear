@@ -16,6 +16,7 @@ from typing import Union
 from fuzz_lightyear.datastore import get_user_defined_mapping
 from fuzz_lightyear.datastore import inject_user_defined_variables
 from fuzz_lightyear.exceptions import ConflictingKeys
+from fuzz_lightyear.util import listify_decorator_args
 
 
 def register_factory(keys: Union[str, Iterable[str]]) -> Callable:
@@ -67,17 +68,14 @@ def register_factory(keys: Union[str, Iterable[str]]) -> Callable:
         ...     assert biz_id == '3'
         ...     return 4
     """
-    if isinstance(keys, str):
-        keys = [
-            key.strip()
-            for key in keys.split(',')
-        ]
+    # This is renamed just to make mypy happy.
+    _keys = listify_decorator_args(keys)
 
     def decorator(func: Callable) -> Callable:
         wrapped = inject_user_defined_variables(func)
 
         mapping = get_user_defined_mapping()
-        for key in keys:
+        for key in _keys:
             if key in mapping:
                 raise ConflictingKeys(key)
 

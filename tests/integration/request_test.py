@@ -1,5 +1,6 @@
 import pytest
 
+import fuzz_lightyear
 from fuzz_lightyear.request import FuzzingRequest
 from fuzz_lightyear.supplements.abstraction import get_abstraction
 from testing.mock_server import URL
@@ -100,3 +101,85 @@ def test_fuzzed_request(tag, id, mock_client):
     response = request.send()
 
     assert response.value == 'ok'
+
+
+@pytest.mark.parametrize(
+    'decorator_args, fuzzing_request_args, expected_headers',
+    [
+        (
+            {'tags': 'types'},
+            {'operation_id': 'get_expect_primitives', 'tag': 'types'},
+            {'__test__': 'test'},
+        ),
+        (
+            {},
+            {'operation_id': 'get_expect_primitives', 'tag': 'types'},
+            {'__test__': 'test'},
+        ),
+        (
+            {'tags': 'numbers'},
+            {'operation_id': 'get_expect_primitives', 'tag': 'types'},
+            {},
+        ),
+    ],
+)
+def test_post_fuzz_hook(
+    mock_client,
+    decorator_args,
+    fuzzing_request_args,
+    expected_headers,
+):
+    def post_fuzz_hook(operation, fuzzed_input):
+        if '_request_options' not in fuzzed_input:
+            fuzzed_input['_request_options'] = {}
+
+        if 'headers' not in fuzzed_input['_request_options']:
+            fuzzed_input['_request_options']['headers'] = {}
+
+        fuzzed_input['_request_options']['headers']['__test__'] = 'test'
+
+    fuzz_lightyear.hooks.post_fuzz(**decorator_args)(post_fuzz_hook)
+    request = FuzzingRequest(**fuzzing_request_args)
+
+    request.send()
+    request_headers = request.fuzzed_input.get('_request_options', {}).get('headers', {})
+    assert request_headers == expected_headers
+
+
+@pytest.mark.parametrize(
+    'decorator_args, fuzzing_request_args',
+    [
+        (
+            {},
+            {'operation_id': 'get_expect_primitives', 'tag': 'types'},
+        ),
+    ],
+)
+def test_multiple_post_fuzz_hooks(mock_client, decorator_args, fuzzing_request_args):
+    def post_fuzz_hook_a(operation, fuzzed_input):
+        if '_request_options' not in fuzzed_input:
+            fuzzed_input['_request_options'] = {}
+
+        if 'headers' not in fuzzed_input['_request_options']:
+            fuzzed_input['_request_options']['headers'] = {}
+
+        fuzzed_input['_request_options']['headers']['__a__'] = 'a'
+
+    def post_fuzz_hook_b(operation, fuzzed_input):
+        if '_request_options' not in fuzzed_input:
+            fuzzed_input['_request_options'] = {}
+
+        if 'headers' not in fuzzed_input['_request_options']:
+            fuzzed_input['_request_options']['headers'] = {}
+
+        fuzzed_input['_request_options']['headers']['__b__'] = 'b'
+
+    fuzz_lightyear.hooks.post_fuzz(**decorator_args)(post_fuzz_hook_a)
+    fuzz_lightyear.hooks.post_fuzz(**decorator_args)(post_fuzz_hook_b)
+    request = FuzzingRequest(**fuzzing_request_args)
+
+    request.send()
+
+    request_headers = request.fuzzed_input.get('_request_options', {}).get('headers', {})
+    assert request_headers['__a__'] == 'a'
+    assert request_headers['__b__'] == 'b'

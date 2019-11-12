@@ -14,6 +14,7 @@ from bravado_core.param import get_param_type_spec      # type: ignore
 from cached_property import cached_property             # type: ignore
 from hypothesis.searchstrategy.strategies import SearchStrategy
 
+from .datastore import get_post_fuzz_hooks
 from .fuzzer import fuzz_parameters
 from .output.logging import log
 from .output.util import print_warning
@@ -143,37 +144,8 @@ class FuzzingRequest:
 
         # Empty dictionary means we're not sending parameters.
         if self.fuzzed_input is None:
-            if not self._fuzzed_input_factory:
-                parameters = []
-                for name, param in self._swagger_operation.params.items():
-                    specification = get_param_type_spec(param).copy()
-                    if param.location == 'body':
-                        # For 'body' parameters, bravado discards information from the
-                        # param spec itself. We pass in the 'required' parameter in this
-                        # case.
-                        # For the 'name' argument (seeing that body parameters can be
-                        # named differently), we pass it in separately as it breaks the
-                        # swagger specification if we group it together.
-                        specification['required'] = param.required
-
-                    parameters.append((name, specification,))
-
-                self._fuzzed_input_factory = fuzz_parameters(parameters)
-
-            # NOTE: If we were really worried about performance later on,
-            #       we might be able to address this. Specifically, we don't
-            #       *need* to generate examples, just to throw it away later
-            #       if the key is already in data.
-            #       However, this involves parameter modification, which may
-            #       require a more involved change.
-            self.fuzzed_input = {}
-            for key, value in self._fuzzed_input_factory.example().items():
-                if key in data:
-                    self.fuzzed_input[key] = data[key]
-                    continue
-
-                if value is not None:
-                    self.fuzzed_input[key] = value
+            self.fuzzed_input = self.fuzz(data)
+            self.apply_post_fuzz_hooks(self.fuzzed_input)
 
         if not auth:
             auth = get_victim_session_factory()()
@@ -183,17 +155,68 @@ class FuzzingRequest:
 
         _merge_auth_headers(self.fuzzed_input, auth)
 
+        # auth details should override fuzzed_input, because
+        # specifics should always override randomly generated content
+        kwargs = _merge_kwargs(self.fuzzed_input, auth, kwargs)
+
         return get_abstraction().request_method(
             operation_id=self.operation_id,
             tag=self.tag,
             *args,
-            **self.fuzzed_input,
-
-            # auth details should override fuzzed_input, because specifics should always
-            # override randomly generated content.
-            **auth,
-            **kwargs
+            **kwargs,
         )
+
+    def fuzz(self, existing_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Returns a dictionary of values which can be used
+        to call the operation being fuzzed.
+        """
+        if not self._fuzzed_input_factory:
+            parameters = []
+            for name, param in self._swagger_operation.params.items():
+                specification = get_param_type_spec(param).copy()
+                if param.location == 'body':
+                    # For 'body' parameters, bravado discards information from the
+                    # param spec itself. We pass in the 'required' parameter in this
+                    # case.
+                    # For the 'name' argument (seeing that body parameters can be
+                    # named differently), we pass it in separately as it breaks the
+                    # swagger specification if we group it together.
+                    specification['required'] = param.required
+
+                parameters.append((name, specification,))
+
+            self._fuzzed_input_factory = fuzz_parameters(parameters)
+
+        # NOTE: If we were really worried about performance later on,
+        #       we might be able to address this. Specifically, we don't
+        #       *need* to generate examples, just to throw it away later
+        #       if the key is already in data.
+        #       However, this involves parameter modification, which may
+        #       require a more involved change.
+        fuzzed_input = {}
+        for key, value in self._fuzzed_input_factory.example().items():
+            if key in existing_data:
+                fuzzed_input[key] = existing_data[key]
+                continue
+
+            if value is not None:
+                fuzzed_input[key] = value
+
+        return fuzzed_input
+
+    def apply_post_fuzz_hooks(self, fuzzed_input: Dict[str, Any]) -> None:
+        """After parameters for a request are fuzzed, this function
+        applies developer-supplied post-fuzz hooks to the fuzzed
+        input.
+
+        :param fuzzed_input: The initial fuzz result from `self.fuzz`.
+        """
+        hooks = get_post_fuzz_hooks(self.operation_id, self.tag)
+        for hook in hooks:
+            hook(
+                self._swagger_operation,
+                fuzzed_input,
+            )
 
     @cached_property        # type: ignore
     def _swagger_operation(self) -> CallableOperation:
@@ -237,3 +260,27 @@ def _merge_auth_headers(fuzzed_params: Dict[str, Any], auth: Dict[str, Any]) -> 
         key = key.replace('-', '_')
         if key in fuzzed_params:
             fuzzed_params.pop(key)
+
+
+def _merge_kwargs(*args: Any) -> Dict[str, Any]:
+    """Merges the input dictionaries into a single dictionary which
+    can be used in a fuzzing request."""
+
+    # Merge headers first, then top-level parameters.
+    headers = {}  # type: Dict[str, str]
+    for dictionary in args:
+        headers.update(dictionary.get('_request_options', {}).get('headers', {}))
+
+    output = {}  # type: Dict[str, Any]
+    for dictionary in args:
+        output.update(dictionary)
+
+    if not headers:
+        return output
+
+    if not output['_request_options']:
+        output['_request_options'] = {}
+
+    output['_request_options']['headers'] = headers
+
+    return output
