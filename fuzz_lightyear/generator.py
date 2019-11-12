@@ -104,23 +104,17 @@ def _add_request_to_sequence(
     for sequence in seed:
         for tag_group in dir(client):
             for request in _generate_requests(tag_group):
-                # Attempt to add every single permutation first.
-                preceding_requests = request_graph[request.operation_id]
-                if any([req.operation_id in preceding_requests for req in sequence]):
+                neighbor_requests = request_graph[request.operation_id]
+                # We have no idea whether a request should consume an existing
+                # resource, use a factory, or fuzz a value.
+                # However, we want to move towards building sequences of requests
+                # that only consume resources created by previous requests (the
+                # algorithm described in the original Microsoft paper)
+                # Therefore, add the request to the sequence if it shares an edge with
+                # ANY of the requests in the sequence- leaving room for factory
+                # usage, but still keeping in line with the spirit of RESTler.
+                if any([req.operation_id in neighbor_requests for req in sequence]):
                     new_sequence = sequence + [request]
-
-                # TODO: sequence pruning. We would get a lot better results if
-                #       we only added a request that consumes resources that
-                #       have been created by the sequence so far. However, due
-                #       to the nature of microservices, we may need to rely on
-                #       factories for this.
-                #
-                #       This is further made complicated because we have no idea
-                #       whether a request should consume an existing resource,
-                #       use a factory, or fuzz a value.
-                #
-                #       This means, we need to do all permutations, because we
-                #       can't possibly know whether to eagerly prune.
                     output.append(new_sequence)
 
     return output
