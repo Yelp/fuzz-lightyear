@@ -128,23 +128,41 @@ def test_length_three(mock_client):
     for sequence in sequences:
         assert len(sequence) <= 3
 
-        assert not is_in_result(
-            [
-                {
-                    'tag': 'basic',
-                    'id': 'get_public_listing',
-                },
-                {
-                    'tag': 'constant',
-                    'id': 'get_will_throw_error',
-                },
-                {
-                    'tag': 'basic',
-                    'id': 'get_public_listing',
-                },
-            ],
-            sequences,
-        )
+    assert not is_in_result(
+        [
+            {
+                'tag': 'basic',
+                'id': 'get_public_listing',
+            },
+            {
+                'tag': 'constant',
+                'id': 'get_will_throw_error',
+            },
+            {
+                'tag': 'basic',
+                'id': 'get_public_listing',
+            },
+        ],
+        sequences,
+    )
+
+    # Based on the request graph-based test discovery algorithm, operations should
+    # only be added to the sequence if they share an edge with at least one operation
+    # in the sequence. get_expect_path_array and get_expect_array do not share an edge
+    # and therefore there should be no sequence that only contains those two operations
+    assert not is_in_result(
+        [
+            {
+                'tag': 'types',
+                'id': 'get_expect_path_array',
+            },
+            {
+                'tag': 'types',
+                'id': 'get_expect_array',
+            },
+        ],
+        sequences,
+    )
 
 
 def is_in_result(expected_sequence, result):
