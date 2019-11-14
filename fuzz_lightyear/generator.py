@@ -132,7 +132,7 @@ def _generate_request_graph() -> Dict[str, set]:
     """
     client = get_abstraction().client
     produces = defaultdict(list)  # type: Dict[str, List[str]]
-    consumes = defaultdict(list)  # type: Dict[str, List[str]]
+    consumes = {}  # type: Dict[str, List[str]]
 
     for tag_group in dir(client):
         for operation_id in dir(getattr(client, tag_group)):
@@ -142,8 +142,8 @@ def _generate_request_graph() -> Dict[str, set]:
                 response_params = list(
                     responses.get('schema', {}).get('properties', {}).keys(),
                 )
-            for response_param in response_params:
-                produces[response_param].append(operation_id)
+                for response_param in response_params:
+                    produces[response_param].append(operation_id)
 
             consumes[operation_id] = list(operation.params.keys())
 
