@@ -121,7 +121,7 @@ def _find_bounds(schema: Dict[str, Any]) -> Dict[str, Any]:
     if 'minimum' in schema:
         bounds['min_value'] = schema['minimum']
         if schema.get('exclusiveMinimum'):
-            bounds['min_vallue'] += 1.0
+            bounds['min_value'] += 1.0
 
     if 'maximum' in schema:
         bounds['max_value'] = schema['maximum']
