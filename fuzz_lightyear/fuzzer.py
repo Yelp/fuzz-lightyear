@@ -6,6 +6,7 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+import hypothesis.provisional as pr
 import hypothesis.strategies as st
 from hypothesis.searchstrategy.strategies import SearchStrategy
 from swagger_spec_validator.common import SwaggerValidationError    # type: ignore
@@ -105,11 +106,25 @@ def _fuzz_string(
     # https://swagger.io/docs/specification/data-models/data-types/#string
     kwargs = {}                                     # type: Dict[str, Any]
 
+    kwargs['min_size'] = parameter.get('minLength', 0)
+    kwargs['max_size'] = parameter.get('maxLength')
+
+    string_format = parameter.get('format')
+
+    if parameter.get('pattern'):
+        return st.from_regex(parameter['pattern'])
+    elif string_format == 'ipv4':
+        return pr.ip4_addr_strings()
+    elif string_format == 'ipv6':
+        return pr.ip6_addr_strings()
+    elif string_format == 'binary':
+        return st.binary(**kwargs)
+
     if parameter.get('required', required):
         kwargs['min_size'] = 1
+
     if not get_settings().unicode_enabled:
         kwargs['alphabet'] = string.printable
-
     return st.text(**kwargs)
 
 
