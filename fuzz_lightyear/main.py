@@ -5,6 +5,7 @@ from typing import Optional
 
 import requests
 import simplejson
+import yaml
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
 from swagger_spec_validator.common import SwaggerValidationError    # type: ignore
@@ -67,10 +68,11 @@ def setup_client(
         return 'Unable to connect to server.'
     except (
         simplejson.errors.JSONDecodeError,      # type: ignore
+        yaml.YAMLError,
         HTTPError,
     ):
         return (
-            'Invalid swagger.json file. Please check to make sure the '
+            'Invalid swagger file. Please check to make sure the '
             'swagger file can be found at: {}.'.format(url)
         )
     except SwaggerValidationError:

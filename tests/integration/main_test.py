@@ -40,7 +40,7 @@ class TestSetupClient:
         assert main.setup_client(url) == 'Unable to connect to server.'
 
     def test_invalid_schema_at_url(self, mock_server):
-        assert 'Invalid swagger.json file.' in main.setup_client(URL)
+        assert 'Invalid swagger file.' in main.setup_client(URL)
 
     def test_success_with_url_only(self, mock_server):
         assert not main.setup_client('{}/schema'.format(URL))

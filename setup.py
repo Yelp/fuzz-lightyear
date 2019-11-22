@@ -43,6 +43,7 @@ setup(
         'bravado',
         'cached-property',
         'hypothesis',
+        'pyyaml',
     ],
     entry_points={
         'console_scripts': [

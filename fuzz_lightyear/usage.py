@@ -7,6 +7,13 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+import yaml
+try:
+    from yaml import CSafeLoader as SafeLoader
+except ImportError:
+    from yaml import SafeLoader
+
+
 from fuzz_lightyear.version import VERSION
 
 
@@ -93,6 +100,14 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
 
 def _is_valid_schema(path: str) -> Dict[str, Any]:
     _is_valid_path(path)
+
+    if path.endswith('json'):
+        return _is_json_schema(path)
+    elif path.endswith(('yaml', 'yml')):
+        return _is_yaml_schema(path)
+
+
+def _is_json_schema(path: str) -> Dict[str, Any]:
     with open(path) as f:
         try:
             return cast(
@@ -102,6 +117,19 @@ def _is_valid_schema(path: str) -> Dict[str, Any]:
         except json.decoder.JSONDecodeError:
             raise argparse.ArgumentTypeError(
                 'Invalid JSON file: {}'.format(path),
+            )
+
+
+def _is_yaml_schema(path: str) -> Dict[str, Any]:
+    with open(path) as f:
+        try:
+            return cast(
+                Dict[str, Any],
+                yaml.load(f, loader=SafeLoader),
+            )
+        except yaml.YAMLError:
+            raise argparse.ArgumentTypeError(
+                'Invalid YAML file: {}'.format(path),
             )
 
 
