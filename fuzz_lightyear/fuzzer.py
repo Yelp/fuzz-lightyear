@@ -93,6 +93,8 @@ def _fuzz_string(
     parameter: Dict[str, Any],
     required: bool = False,
 ) -> SearchStrategy:
+    # TODO: Handle date and date-time string formats.
+    # https://swagger.io/docs/specification/data-models/data-types/#string
     if parameter.get('in', None) == 'header':
         return st.text(
             # According to RFC 7230, non-ascii letters are deprecated, and there's
@@ -102,8 +104,14 @@ def _fuzz_string(
             alphabet=string.ascii_letters,
         )
 
-    # TODO: Handle a bunch of swagger string formats.
-    # https://swagger.io/docs/specification/data-models/data-types/#string
+    if parameter.get('pattern'):
+        full_match = (
+            parameter['pattern'][0] == '^'
+            and parameter['pattern'][-1] == '$'
+            and parameter['pattern'][-2] != '\\'
+        )
+        return st.from_regex(parameter['pattern'], fullmatch=full_match)
+
     kwargs = {}                                     # type: Dict[str, Any]
 
     kwargs['min_size'] = parameter.get('minLength', 0)
@@ -111,9 +119,7 @@ def _fuzz_string(
 
     string_format = parameter.get('format')
 
-    if parameter.get('pattern'):
-        return st.from_regex(parameter['pattern'])
-    elif string_format == 'ipv4':
+    if string_format == 'ipv4':
         return pr.ip4_addr_strings()
     elif string_format == 'ipv6':
         return pr.ip6_addr_strings()
