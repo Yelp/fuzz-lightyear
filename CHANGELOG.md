@@ -22,8 +22,16 @@ If you love `fuzz-lightyear`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
-### 0.0.4
+### 0.0.5
+##### :mega: Release Highlights
 
+- Use a smarter request-sequence generation algorithm using an adjacency list ([#37])
+
+#### :tada: New Features
+
+- Support YAML Swagger schema files ([#39])
+
+### 0.0.4
 ##### :tada: New Features
 
 - Add a setup fixture decorator `@fuzz_lightyear.setup` which is run before fuzzing ([#32])
