@@ -45,7 +45,6 @@ class FuzzingRequest:
         self.fuzzed_input = kwargs              # type: Optional[Dict[str, Any]]
         if not self.fuzzed_input:
             self.fuzzed_input = None
-
         # This SearchStrategy should be generated with hypothesis' `fixed_dictionaries`,
         # mapping keys to SearchStrategy.
         self._fuzzed_input_factory = None       # type: Optional[SearchStrategy]
@@ -56,6 +55,24 @@ class FuzzingRequest:
             self.tag,
             self.operation_id,
         )
+
+    def get_fuzzed_url(self, request_data):
+        url = (
+            f'{self._swagger_operation.swagger_spec.api_url.rstrip("/")}'
+            f'{request_data["path"]}'
+        )
+
+        if 'query' in request_data:
+            url += '?'
+            for key, value in request_data['query'].items():
+                if not isinstance(value, list):
+                    # NOTE: value should not be a dict, for a query param.
+                    value = [value]
+                for v in value:
+                    url += f'{key}={quote_plus(str(v).encode())}&'
+
+            url = url.rstrip('&')
+        return url
 
     def _encode_array_in_path(
         self,
@@ -99,21 +116,7 @@ class FuzzingRequest:
 
     def __str__(self) -> str:
         data = self.json()
-        url = (
-            f'{self._swagger_operation.swagger_spec.api_url.rstrip("/")}'
-            f'{data["path"]}'
-        )
-
-        if 'query' in data:
-            url += '?'
-            for key, value in data['query'].items():
-                if not isinstance(value, list):
-                    # NOTE: value should not be a dict, for a query param.
-                    value = [value]
-                for v in value:
-                    url += f'{key}={quote_plus(str(v).encode())}&'
-
-            url = url.rstrip('&')
+        url = self.get_fuzzed_url(data)
 
         args = []
         if 'formData' in data:
@@ -212,10 +215,12 @@ class FuzzingRequest:
         :param fuzzed_input: The initial fuzz result from `self.fuzz`.
         """
         hooks = get_post_fuzz_hooks(self.operation_id, self.tag)
+        url = self.get_fuzzed_url(self.json())
         for hook in hooks:
             hook(
                 self._swagger_operation,
                 fuzzed_input,
+                url,
             )
 
     @cached_property        # type: ignore

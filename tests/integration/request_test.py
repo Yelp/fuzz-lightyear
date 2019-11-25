@@ -129,7 +129,7 @@ def test_post_fuzz_hook(
     fuzzing_request_args,
     expected_headers,
 ):
-    def post_fuzz_hook(operation, fuzzed_input):
+    def post_fuzz_hook(operation, fuzzed_input, url=None):
         if '_request_options' not in fuzzed_input:
             fuzzed_input['_request_options'] = {}
 
@@ -156,7 +156,7 @@ def test_post_fuzz_hook(
     ],
 )
 def test_multiple_post_fuzz_hooks(mock_client, decorator_args, fuzzing_request_args):
-    def post_fuzz_hook_a(operation, fuzzed_input):
+    def post_fuzz_hook_a(operation, fuzzed_input, url=None):
         if '_request_options' not in fuzzed_input:
             fuzzed_input['_request_options'] = {}
 
@@ -165,7 +165,7 @@ def test_multiple_post_fuzz_hooks(mock_client, decorator_args, fuzzing_request_a
 
         fuzzed_input['_request_options']['headers']['__a__'] = 'a'
 
-    def post_fuzz_hook_b(operation, fuzzed_input):
+    def post_fuzz_hook_b(operation, fuzzed_input, url=None):
         if '_request_options' not in fuzzed_input:
             fuzzed_input['_request_options'] = {}
 
