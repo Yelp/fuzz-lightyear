@@ -145,7 +145,9 @@ class FuzzingRequest:
         # Empty dictionary means we're not sending parameters.
         if self.fuzzed_input is None:
             self.fuzzed_input = self.fuzz(data)
-            self.apply_post_fuzz_hooks(self.fuzzed_input)
+            self.apply_post_fuzz_hooks(self.fuzzed_input, rerun=False)
+        else:
+            self.apply_post_fuzz_hooks(self.fuzzed_input, rerun=True)
 
         if not auth:
             auth = get_victim_session_factory()()
@@ -204,14 +206,18 @@ class FuzzingRequest:
 
         return fuzzed_input
 
-    def apply_post_fuzz_hooks(self, fuzzed_input: Dict[str, Any]) -> None:
+    def apply_post_fuzz_hooks(
+        self,
+        fuzzed_input: Dict[str, Any],
+        rerun: Optional[bool] = False,
+    ) -> None:
         """After parameters for a request are fuzzed, this function
         applies developer-supplied post-fuzz hooks to the fuzzed
         input.
 
         :param fuzzed_input: The initial fuzz result from `self.fuzz`.
         """
-        hooks = get_post_fuzz_hooks(self.operation_id, self.tag)
+        hooks = get_post_fuzz_hooks(self.operation_id, self.tag, rerun)
         for hook in hooks:
             hook(
                 self._swagger_operation,
