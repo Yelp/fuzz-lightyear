@@ -2,6 +2,8 @@ import pytest
 
 from fuzz_lightyear.datastore import _ALL_POST_FUZZ_HOOKS_BY_OPERATION
 from fuzz_lightyear.datastore import _ALL_POST_FUZZ_HOOKS_BY_TAG
+from fuzz_lightyear.datastore import _RERUN_POST_FUZZ_HOOKS_BY_OPERATION
+from fuzz_lightyear.datastore import _RERUN_POST_FUZZ_HOOKS_BY_TAG
 from fuzz_lightyear.datastore import get_excluded_operations
 from fuzz_lightyear.datastore import get_included_tags
 from fuzz_lightyear.datastore import get_non_vulnerable_operations
@@ -23,3 +25,5 @@ def clear_caches():
 
     _ALL_POST_FUZZ_HOOKS_BY_OPERATION.clear()
     _ALL_POST_FUZZ_HOOKS_BY_TAG.clear()
+    _RERUN_POST_FUZZ_HOOKS_BY_OPERATION.clear()
+    _RERUN_POST_FUZZ_HOOKS_BY_TAG.clear()
