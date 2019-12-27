@@ -13,7 +13,7 @@ coverage==4.5.4
 filelock==3.0.12
 Flask==1.1.1
 flask-restplus==0.13.0
-hypothesis==4.34.0
+hypothesis==4.56.1
 identify==1.4.7
 idna==2.8
 importlib-metadata==0.19

@@ -7,7 +7,7 @@ from typing import Optional
 from typing import Tuple
 
 import hypothesis.strategies as st
-from hypothesis.searchstrategy.strategies import SearchStrategy
+from hypothesis.strategies import SearchStrategy
 from swagger_spec_validator.common import SwaggerValidationError    # type: ignore
 
 from .datastore import get_user_defined_mapping

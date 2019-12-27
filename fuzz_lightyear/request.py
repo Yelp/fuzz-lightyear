@@ -12,7 +12,7 @@ from urllib.parse import urlencode
 from bravado.client import CallableOperation
 from bravado_core.param import get_param_type_spec      # type: ignore
 from cached_property import cached_property             # type: ignore
-from hypothesis.searchstrategy.strategies import SearchStrategy
+from hypothesis.strategies import SearchStrategy
 
 from .datastore import get_post_fuzz_hooks
 from .fuzzer import fuzz_parameters
