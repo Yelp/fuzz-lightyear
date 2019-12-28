@@ -42,7 +42,7 @@ setup(
     install_requires=[
         'bravado',
         'cached-property',
-        'hypothesis',
+        'hypothesis>=4.56.1',
         'pyyaml',
     ],
     entry_points={
