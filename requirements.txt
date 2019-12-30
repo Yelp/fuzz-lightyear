@@ -4,7 +4,7 @@ bravado-core==5.13.1
 cached-property==1.5.1
 certifi==2019.6.16
 chardet==3.0.4
-hypothesis==4.28.2
+hypothesis==4.56.1
 idna==2.8
 jsonpointer==2.0
 jsonref==0.2

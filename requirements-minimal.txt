@@ -1,5 +1,5 @@
 # Remember to update setup.py when making changes to this file.
 bravado
 cached-property
-hypothesis
+hypothesis>=4.56.1
 pyyaml
