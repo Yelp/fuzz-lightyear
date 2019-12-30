@@ -315,6 +315,7 @@ fuzzed data to a valid form.
 @fuzz_lightyear.hooks.post_fuzz(
     tags='user',
     operations='some_function',
+    rerun=True,
 )
 def apply_nonce(
     operation: bravado.client.CallableOperation,
@@ -323,6 +324,9 @@ def apply_nonce(
     """This hook creates and adds a nonce to any request against
     operations with the 'user' tag, and additionally to the
     'some_function' operation.
+
+    In addition, this nonce cannot be reused by a fuzz-lightyear
+    request object, so we mark this hook is needing to be `rerun`.
     """
     nonce = make_nonce()
     fuzzed_data['nonce'] = nonce
