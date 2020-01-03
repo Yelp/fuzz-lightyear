@@ -22,6 +22,15 @@ If you love `fuzz-lightyear`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### 0.0.6
+##### :tada: New Features
+
+- Add the `rerun` parameter to post-fuzz hooks ([#41])
+
+##### :snake: Miscellaneous
+
+- Pin a minimum version for the hypothesis dependency ([#42])
+
 ### 0.0.5
 ##### :mega: Release Highlights
 
