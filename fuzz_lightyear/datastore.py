@@ -19,14 +19,20 @@ PostFuzzHook = Callable[[CallableOperation, Dict[str, Any]], None]
 # These are module variables which contain the post-fuzz hooks
 # which have been registered. Each global allows fuzz_lightyear
 # to get a list applicable to a certain operation or tag.
-_POST_FUZZ_HOOKS_BY_OPERATION = defaultdict(set)  # type: Dict[str, Set[PostFuzzHook]]
-_POST_FUZZ_HOOKS_BY_TAG = defaultdict(set)  # type: Dict[str, Set[PostFuzzHook]]
+_ALL_POST_FUZZ_HOOKS_BY_OPERATION = defaultdict(set)  # type: Dict[str, Set[PostFuzzHook]]
+_ALL_POST_FUZZ_HOOKS_BY_TAG = defaultdict(set)  # type: Dict[str, Set[PostFuzzHook]]
+
+# This probably isn't scalable if we add more parameters to
+# hooks , but for now this works, and is easy to understand.
+_RERUN_POST_FUZZ_HOOKS_BY_OPERATION = defaultdict(set)  # type: Dict[str, Set[PostFuzzHook]]  # noqa: E501
+_RERUN_POST_FUZZ_HOOKS_BY_TAG = defaultdict(set)  # type: Dict[str, Set[PostFuzzHook]]
 
 
 def register_post_fuzz_hook(
     hook: PostFuzzHook,
     operation_ids: Optional[List[str]] = None,
     tags: Optional[List[str]] = None,
+    rerun: bool = True,
 ) -> None:
     """Adds a post-fuzz hook to fuzz_lightyear's store of post-fuzz
     hooks.
@@ -36,6 +42,8 @@ def register_post_fuzz_hook(
     applies to.
     :param tags: A list of Swagger tags that the input hook applies
     to.
+    :param rerun: Whether this hook needs to be rerun if a request
+    is rerun (for example, in the idor plugin).
     """
     if not operation_ids and not tags:
         operation_ids = ['*']
@@ -47,23 +55,36 @@ def register_post_fuzz_hook(
         tags = []
 
     for operation_id in operation_ids:
-        _POST_FUZZ_HOOKS_BY_OPERATION[operation_id].add(hook)
+        _ALL_POST_FUZZ_HOOKS_BY_OPERATION[operation_id].add(hook)
+        if rerun:
+            _RERUN_POST_FUZZ_HOOKS_BY_OPERATION[operation_id].add(hook)
 
     for tag in tags:
-        _POST_FUZZ_HOOKS_BY_TAG[tag].add(hook)
+        _ALL_POST_FUZZ_HOOKS_BY_TAG[tag].add(hook)
+        if rerun:
+            _RERUN_POST_FUZZ_HOOKS_BY_TAG[tag].add(hook)
 
 
 def get_post_fuzz_hooks(
     operation_id: str,
     tag: Optional[str] = None,
+    rerun: Optional[bool] = False,
 ) -> List[PostFuzzHook]:
     """Returns a list of functions that should be applied to fuzzed
     data for the input operation.
     """
-    operation_hooks = _POST_FUZZ_HOOKS_BY_OPERATION[operation_id].union(
-        _POST_FUZZ_HOOKS_BY_OPERATION['*'],
+    operation_hook_store = _RERUN_POST_FUZZ_HOOKS_BY_OPERATION \
+        if rerun \
+        else _ALL_POST_FUZZ_HOOKS_BY_OPERATION
+
+    tag_hook_store = _RERUN_POST_FUZZ_HOOKS_BY_TAG \
+        if rerun \
+        else _ALL_POST_FUZZ_HOOKS_BY_TAG
+
+    operation_hooks = operation_hook_store[operation_id].union(
+        operation_hook_store['*'],
     )
-    tag_hooks = _POST_FUZZ_HOOKS_BY_TAG[tag] if tag else set()
+    tag_hooks = tag_hook_store[tag] if tag else set()
     return list(operation_hooks.union(tag_hooks))
 
 
@@ -164,8 +185,8 @@ def inject_user_defined_variables(func: Callable) -> Callable:
 
             value = mapping[arg_name]()
             if (
-                arg_name in type_annotations
-                and not isinstance(type_annotations[arg_name], type(List))
+                arg_name in type_annotations and
+                not isinstance(type_annotations[arg_name], type(List))
             ):
                 # If type annotations are used, use that to cast
                 # values for input.

@@ -10,6 +10,7 @@ from fuzz_lightyear.util import listify_decorator_args
 def post_fuzz(
     operations: Optional[Union[str, Iterable[str]]] = None,
     tags: Optional[Union[str, Iterable[str]]] = None,
+    rerun: bool = True,
 ) -> Callable:
 
     # These are renamed just to make mypy happy.
@@ -21,6 +22,7 @@ def post_fuzz(
             hook=func,
             operation_ids=operation_ids,
             tags=_tags,
+            rerun=rerun,
         )
         return func
 

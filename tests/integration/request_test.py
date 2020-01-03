@@ -1,3 +1,6 @@
+import base64
+import os
+
 import pytest
 
 import fuzz_lightyear
@@ -183,3 +186,35 @@ def test_multiple_post_fuzz_hooks(mock_client, decorator_args, fuzzing_request_a
     request_headers = request.fuzzed_input.get('_request_options', {}).get('headers', {})
     assert request_headers['__a__'] == 'a'
     assert request_headers['__b__'] == 'b'
+
+
+@pytest.mark.parametrize(
+    'decorator_args, fuzzing_request_args',
+    [
+        (
+            {'rerun': True},
+            {'operation_id': 'get_expect_primitives', 'tag': 'types'},
+        ),
+    ],
+)
+def test_rerun_post_fuzz_hook(mock_client, decorator_args, fuzzing_request_args):
+    def nonce_post_fuzz_hook(operation, fuzzed_input):
+        if '_request_options' not in fuzzed_input:
+            fuzzed_input['_request_options'] = {}
+
+        if 'headers' not in fuzzed_input['_request_options']:
+            fuzzed_input['_request_options']['headers'] = {}
+
+        fuzzed_input['_request_options']['headers']['__nonce__'] = \
+            base64.b64encode(os.urandom(4)).decode()
+
+    fuzz_lightyear.hooks.post_fuzz(**decorator_args)(nonce_post_fuzz_hook)
+    request = FuzzingRequest(**fuzzing_request_args)
+
+    request.send()
+    original_nonce = request.fuzzed_input['_request_options']['headers']['__nonce__']
+
+    request.send()
+    new_nonce = request.fuzzed_input['_request_options']['headers']['__nonce__']
+
+    assert new_nonce != original_nonce
