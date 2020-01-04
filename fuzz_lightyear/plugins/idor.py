@@ -34,13 +34,13 @@ class IDORPlugin(BasePlugin):
         request_sequence: List[FuzzingRequest],
         response_sequence: List[Any],
     ) -> bool:
-        last_request = request_sequence[-1]
-        try:
-            last_request.send(
-                auth=get_abstraction().get_attacker_session(),  # type: ignore
-                should_log=False,
-            )
+        for request in request_sequence:
+            try:
+                request.send(
+                    auth=get_abstraction().get_attacker_session(),  # type: ignore
+                    should_log=False,
+                )
 
-            return True
-        except (HTTPError, SwaggerMappingError, ValidationError):
-            return False
+            except (HTTPError, SwaggerMappingError, ValidationError):
+                return False
+        return True

@@ -61,25 +61,30 @@ class BravoTwo(Resource):
         return number_query_parser.parse_args()['id']
 
 
-@ns.route('/side-effect/create')
+@ns.route('/side-effect/create/<int:id>')
 class CreateWithSideEffect(Resource):
     @api.doc(security='apikey')
     @api.response(200, 'Success', model=widget_model)
     @requires_user
-    def post(self, user):
-        user.has_created_resource = True
-        user.save()
+    def post(self, id, user):
 
         with database.connection() as session:
+            entry = session.query(Widget).filter(
+                Widget.id == id,
+            ).first()
+            if entry:
+                abort(500)
             entry = Widget()
+            entry.id = id
 
             session.add(entry)
             session.commit()
 
-            widget_id = entry.id
+        user.has_created_resource = True
+        user.save()
 
         return {
-            'id': widget_id,
+            'id': id,
         }
 
 
