@@ -1,5 +1,3 @@
-import pytest
-
 from fuzz_lightyear.request import FuzzingRequest
 from fuzz_lightyear.response import ResponseSequence
 from fuzz_lightyear.runner import run_sequence
@@ -36,9 +34,6 @@ def test_skipped_due_to_no_inputs(mock_client):
     assert responses.test_results == {}
 
 
-@pytest.mark.xfail(
-    reason='https://github.com/Yelp/fuzz-lightyear/issues/11',
-)
 def test_side_effect(mock_api_client):
     responses = run_sequence(
         [
@@ -62,3 +57,26 @@ def test_side_effect(mock_api_client):
 
     assert responses.responses[1].has_created_resource
     assert responses.test_results['IDORPlugin']
+
+
+def test_no_vuln(mock_api_client):
+    responses = run_sequence(
+        [
+            FuzzingRequest(
+                tag='nonvulnerable',
+                operation_id='post_create_no_vuln',
+            ),
+            FuzzingRequest(
+                tag='user',
+                operation_id='get_get_user',
+            ),
+            FuzzingRequest(
+                tag='nonvulnerable',
+                operation_id='get_get_no_vuln',
+            ),
+        ],
+        ResponseSequence(),
+    )
+
+    assert responses.responses[1].created_resource
+    assert not responses.test_results['IDORPlugin']

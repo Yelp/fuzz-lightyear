@@ -34,6 +34,12 @@ class IDORPlugin(BasePlugin):
         request_sequence: List[FuzzingRequest],
         response_sequence: List[Any],
     ) -> bool:
+        # We have the attacker execute the same request sequence with different
+        # values except for the last request.
+        for request in request_sequence[:-1]:
+            if request.fuzzed_input:
+                for query_key in request.fuzzed_input:
+                    request.fuzzed_input[query_key] += 1
         for request in request_sequence:
             try:
                 request.send(

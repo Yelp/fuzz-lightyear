@@ -20,3 +20,10 @@ widget_model = api.model(
         'id': fields.Integer(required=True),
     },
 )
+
+thing_model = api.model(
+    'Thing',
+    {
+        'id': fields.Integer(required=True),
+    },
+)
