@@ -34,7 +34,7 @@ def test_skipped_due_to_no_inputs(mock_client):
     assert responses.test_results == {}
 
 
-def test_side_effect(mock_api_client):
+def test_side_effect_unsafe(mock_api_client):
     responses = run_sequence(
         [
             FuzzingRequest(
@@ -49,13 +49,13 @@ def test_side_effect(mock_api_client):
             # This goes last, to test for IDOR.
             FuzzingRequest(
                 tag='sequence',
-                operation_id='get_get_with_side_effect',
+                operation_id='get_get_with_side_effect_unsafe',
             ),
         ],
         ResponseSequence(),
     )
 
-    assert responses.responses[1].has_created_resource
+    assert responses.responses[1].created_resource
     assert responses.test_results['IDORPlugin']
 
 
@@ -64,7 +64,7 @@ def test_side_effect_safe(mock_api_client):
         [
             FuzzingRequest(
                 tag='sequence',
-                operation_id='post_create_with_side_effect_safe',
+                operation_id='post_create_with_side_effect',
             ),
             FuzzingRequest(
                 tag='user',
