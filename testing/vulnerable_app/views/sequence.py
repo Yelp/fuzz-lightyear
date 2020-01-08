@@ -90,9 +90,56 @@ class GetWithSideEffect(Resource):
     @api.response(404, 'Not Found')
     @requires_user
     def get(self, id, user):
-        print(user.to_dict())
         if not user.has_created_resource:
             abort(401)
+
+        with database.connection() as session:
+            try:
+                entry = session.query(Widget).filter(
+                    Widget.id == id,
+                ).one()
+            except NoResultFound:
+                abort(404)
+
+            widget_id = entry.id
+
+        return {
+            'id': widget_id,
+        }
+
+
+@ns.route('/side-effect-safe/create')
+class CreateWithSideEffectSafe(Resource):
+    @api.doc(security='apikey')
+    @api.response(200, 'Success', model=widget_model)
+    @requires_user
+    def post(self, user):
+
+        with database.connection() as session:
+            entry = Widget()
+
+            session.add(entry)
+            session.commit()
+
+            widget_id = entry.id
+
+            user.created_resource = [entry.id]
+            user.save()
+
+        return {
+            'id': widget_id,
+        }
+
+
+@ns.route('/side-effect-safe/get/<int:id>')
+class GetWithSideEffectSafe(Resource):
+    @api.doc(security='apikey')
+    @api.response(200, 'Success', model=widget_model)
+    @api.response(404, 'Not Found')
+    @requires_user
+    def get(self, id, user):
+        if id not in user.created_resource:
+            abort(403)
 
         with database.connection() as session:
             try:

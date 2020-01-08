@@ -59,20 +59,22 @@ def test_side_effect(mock_api_client):
     assert responses.test_results['IDORPlugin']
 
 
-def test_no_vuln(mock_api_client):
+def test_side_effect_safe(mock_api_client):
     responses = run_sequence(
         [
             FuzzingRequest(
-                tag='nonvulnerable',
-                operation_id='post_create_no_vuln',
+                tag='sequence',
+                operation_id='post_create_with_side_effect_safe',
             ),
             FuzzingRequest(
                 tag='user',
                 operation_id='get_get_user',
             ),
+
+            # This goes last, to test for IDOR.
             FuzzingRequest(
-                tag='nonvulnerable',
-                operation_id='get_get_no_vuln',
+                tag='sequence',
+                operation_id='get_get_with_side_effect_safe',
             ),
         ],
         ResponseSequence(),
