@@ -270,23 +270,29 @@ def _merge_auth_headers(fuzzed_params: Dict[str, Any], auth: Dict[str, Any]) -> 
 
 def _merge_kwargs(*args: Any) -> Dict[str, Any]:
     """Merges the input dictionaries into a single dictionary which
-    can be used in a fuzzing request."""
+    can be used in a fuzzing request.
 
-    # Merge headers first, then top-level parameters.
+    We need to merge headers and request_options seperately since
+    they themselves are dictionaries.
+    """
+
     headers = {}  # type: Dict[str, str]
     for dictionary in args:
         headers.update(dictionary.get('_request_options', {}).get('headers', {}))
+
+    request_options = {}  # type: Dict[str, Any]
+    for dictionary in args:
+        # NOTE: this code does not merge the Bravado
+        # response_callbacks option correctly, but we don't use it
+        # in fuzz-lightyear. _request_options docs:
+        # https://bravado.readthedocs.io/en/stable/configuration.html
+        request_options.update(dictionary.get('_request_options', {}))
 
     output = {}  # type: Dict[str, Any]
     for dictionary in args:
         output.update(dictionary)
 
-    if not headers:
-        return output
-
-    if not output['_request_options']:
-        output['_request_options'] = {}
-
+    output['_request_options'] = request_options
     output['_request_options']['headers'] = headers
 
     return output
