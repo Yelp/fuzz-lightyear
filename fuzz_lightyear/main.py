@@ -2,12 +2,14 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+import warnings
 
 import requests
 import simplejson
 import yaml
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
+from hypothesis.errors import NonInteractiveExampleWarning
 from swagger_spec_validator.common import SwaggerValidationError    # type: ignore
 
 from .datastore import get_setup_fixtures
@@ -26,6 +28,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = parse_args(argv)
     if args.verbose:    # pragma: no cover
         log.set_debug_level(args.verbose)
+
+    # NOTE: Hypothesis warns us against using `.example()` (which we leverage
+    # during the fuzzing process), and to use `@given` instead. However, we
+    # are not using hypothesis in a conventional manner, and therefore this
+    # warning does not apply to us.
+    warnings.filterwarnings('ignore', category=NonInteractiveExampleWarning)
 
     # Setup
     message = setup_client(args.url, args.schema)
