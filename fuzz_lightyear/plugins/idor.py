@@ -36,11 +36,15 @@ class IDORPlugin(BasePlugin):
         request_sequence: List[FuzzingRequest],
         response_sequence: List[Any],
     ) -> bool:
+        run_sequence(
+            sequence=request_sequence[:-1],
+            responses=ResponseSequence(),
+            auth=get_abstraction().get_attacker_session(),  # type: ignore
+        )
         try:
-            run_sequence(
-                sequence=request_sequence,
-                responses=ResponseSequence(),
+            request_sequence[-1].send(
                 auth=get_abstraction().get_attacker_session(),  # type: ignore
+                should_log=False,
             )
             return True
 
