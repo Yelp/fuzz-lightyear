@@ -1,10 +1,10 @@
 from fuzz_lightyear.request import FuzzingRequest
 from fuzz_lightyear.response import ResponseSequence
-from fuzz_lightyear.runner import run_sequence
+from fuzz_lightyear.runner import validate_sequence
 
 
 def test_basic(mock_client):
-    responses = run_sequence(
+    responses = validate_sequence(
         [
             FuzzingRequest(
                 tag='basic',
@@ -20,7 +20,7 @@ def test_basic(mock_client):
 
 
 def test_skipped_due_to_no_inputs(mock_client):
-    responses = run_sequence(
+    responses = validate_sequence(
         [
             FuzzingRequest(
                 tag='basic',
@@ -35,7 +35,7 @@ def test_skipped_due_to_no_inputs(mock_client):
 
 
 def test_side_effect_unsafe(mock_api_client):
-    responses = run_sequence(
+    responses = validate_sequence(
         [
             FuzzingRequest(
                 tag='sequence',
@@ -60,7 +60,7 @@ def test_side_effect_unsafe(mock_api_client):
 
 
 def test_side_effect_safe(mock_api_client):
-    responses = run_sequence(
+    responses = validate_sequence(
         [
             FuzzingRequest(
                 tag='sequence',

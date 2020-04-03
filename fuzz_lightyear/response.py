@@ -2,7 +2,6 @@ from typing import Any
 from typing import Dict
 from typing import List
 
-from .plugins import get_enabled_plugins
 from .request import FuzzingRequest
 
 
@@ -33,6 +32,8 @@ class ResponseSequence:
         self,
         request_sequence: List[FuzzingRequest],
     ) -> None:
+        # We import here because otherwise we run into a circular dependency
+        from .plugins import get_enabled_plugins
         plugins = get_enabled_plugins()
         for plugin in plugins:
             if plugin.should_run(

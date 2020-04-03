@@ -4,7 +4,7 @@ from bravado.exception import HTTPError
 import fuzz_lightyear
 from fuzz_lightyear.request import FuzzingRequest
 from fuzz_lightyear.response import ResponseSequence
-from fuzz_lightyear.runner import run_sequence
+from fuzz_lightyear.runner import validate_sequence
 
 
 @pytest.fixture
@@ -21,7 +21,7 @@ def non_vulnerable_operations(request):
 
 def test_invalid_request(mock_client):
     with pytest.raises(HTTPError):
-        run_sequence(
+        validate_sequence(
             [
                 FuzzingRequest(
                     tag='constant',
@@ -45,7 +45,7 @@ def test_valid_request_skip_idor_manually_excluded(
     mock_client,
     non_vulnerable_operations,
 ):
-    responses = run_sequence(
+    responses = validate_sequence(
         [
             FuzzingRequest(
                 tag='basic',
@@ -62,7 +62,7 @@ def test_valid_request_skip_idor_manually_excluded(
 class TestStatefulSequence:
 
     def test_basic(self, mock_client):
-        responses = run_sequence(
+        responses = validate_sequence(
             [
                 FuzzingRequest(
                     tag='sequence',
@@ -90,7 +90,7 @@ class TestStatefulSequence:
 
             return output
         fuzz_lightyear.register_factory('id')(create_resource)
-        responses = run_sequence(
+        responses = validate_sequence(
             [
                 FuzzingRequest(
                     tag='sequence',

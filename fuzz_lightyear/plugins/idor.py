@@ -7,6 +7,8 @@ from jsonschema.exceptions import ValidationError           # type: ignore
 
 from ..datastore import get_non_vulnerable_operations
 from ..request import FuzzingRequest
+from ..response import ResponseSequence
+from ..runner import run_sequence
 from ..supplements.abstraction import get_abstraction
 from .base import BasePlugin
 
@@ -34,19 +36,13 @@ class IDORPlugin(BasePlugin):
         request_sequence: List[FuzzingRequest],
         response_sequence: List[Any],
     ) -> bool:
-        # We have the attacker execute the same request sequence with different
-        # values except for the last request.
-        for request in request_sequence[:-1]:
-            if request.fuzzed_input:
-                for query_key in request.fuzzed_input:
-                    request.fuzzed_input[query_key] += 1
-        for request in request_sequence:
-            try:
-                request.send(
-                    auth=get_abstraction().get_attacker_session(),  # type: ignore
-                    should_log=False,
-                )
+        try:
+            run_sequence(
+                sequence=request_sequence,
+                responses=ResponseSequence(),
+                auth=get_abstraction().get_attacker_session(),  # type: ignore
+            )
+            return True
 
-            except (HTTPError, SwaggerMappingError, ValidationError):
-                return False
-        return True
+        except (HTTPError, SwaggerMappingError, ValidationError):
+            return False

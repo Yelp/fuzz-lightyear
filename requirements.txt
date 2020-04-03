@@ -1,4 +1,4 @@
-attrs==19.1.0
+attrs==19.2.0
 bravado==10.4.1
 bravado-core==5.13.1
 cached-property==1.5.1
