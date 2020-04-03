@@ -147,6 +147,15 @@ class FuzzingRequest:
             self.fuzzed_input = self.fuzz(data)
             self.apply_post_fuzz_hooks(self.fuzzed_input, rerun=False)
         else:
+            # On the first run, self.fuzzed_input will be initialized
+            # to a dictionary. Therefore, if this request is sent again,
+            # this code path will execute, and we will want to rerun
+            # the applicable post_fuzz hooks.
+            #
+            # TODO: I wonder whether we have to distinguish between
+            # explicitly initialized `fuzzed_input`, and *actually* fuzzed
+            # input, given that the former case will technically be the
+            # *first* time the post_fuzz hook is run.
             self.apply_post_fuzz_hooks(self.fuzzed_input, rerun=True)
 
         if not auth:

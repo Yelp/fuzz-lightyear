@@ -108,9 +108,11 @@ def _add_request_to_sequence(
                 neighbor_requests = request_graph[request.operation_id]
                 # We have no idea whether a request should consume an existing
                 # resource, use a factory, or fuzz a value.
+                #
                 # However, we want to move towards building sequences of requests
                 # that only consume resources created by previous requests (the
                 # algorithm described in the original Microsoft paper)
+                #
                 # Therefore, add the request to the sequence if it shares an edge with
                 # ANY of the requests in the sequence- leaving room for factory
                 # usage, but still keeping in line with the spirit of RESTler.
