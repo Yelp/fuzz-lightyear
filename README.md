@@ -224,6 +224,8 @@ These fixtures are required for the `IDORPlugin`.
 ```python
 """
 These values are passed into the configured request method as keyword arguments.
+Check out https://bravado.readthedocs.io/en/stable/advanced.html#adding-request-headers
+for more info.
 """
 import fuzz_lightyear
 
@@ -231,17 +233,21 @@ import fuzz_lightyear
 @fuzz_lightyear.victim_account
 def victim_factory():
     return {
-        'headers': {
-            'session': 'victim_session_id',
-        },
+        '_request_options': {
+            'headers': {
+                'session': 'victim_session_id',
+            },
+        }
     }
 
 
 @fuzz_lightyear.attacker_account
 def attacker_factory():
     return {
-        'headers': {
-            'session': 'attacker_session_id',
+        '_request_options': {
+            'headers': {
+                'session': 'attacker_session_id',
+            }
         }
     }
 ```
