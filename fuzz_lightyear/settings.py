@@ -8,6 +8,7 @@ class Settings:
     def __init__(self) -> None:
         self.seed = random.getrandbits(128)    # type: int
         self.unicode_enabled = True            # type: bool
+        self.enable_color = True               # type: bool
 
     @property
     def seed(self) -> int:
