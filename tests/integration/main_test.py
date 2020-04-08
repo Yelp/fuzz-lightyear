@@ -1,3 +1,6 @@
+import io
+from contextlib import redirect_stdout
+
 from fuzz_lightyear import main
 from testing.mock_server import PORT
 from testing.mock_server import URL
@@ -32,6 +35,33 @@ class TestMain:
             '--ignore-exceptions',
             '-f', 'test_data/nested',
         ])
+
+    def test_ignore_non_vulnerable(self, mock_client):
+        f = io.StringIO()
+        with redirect_stdout(f):
+            main.main([
+                f'{URL}/schema',
+                '-t', 'basic.get_public_listing',
+                '-f', 'test_data/nested',
+            ])
+
+        # Non-vulnerable endpoints will be run, but the result of the IDORPlugin
+        # will be ignored since the endpoint is marked as non-vulnerable. This
+        # is why the result "passes".
+        assert '1 passed' in f.getvalue()
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            main.main([
+                f'{URL}/schema',
+                '-t', 'basic.get_public_listing',
+                '-f', 'test_data/nested',
+                '--ignore-non-vulnerable',
+            ])
+
+        # On the other hand, excluded endpoints aren't even run. Since we're
+        # only specifying one test to run here, we'll get a blank test result.
+        assert 'No tests run!' in f.getvalue()
 
 
 class TestSetupClient:

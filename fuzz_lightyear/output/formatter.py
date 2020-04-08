@@ -144,6 +144,9 @@ def format_summary(
         summary = [f'{num_failures} failed', *summary]
         color = AnsiColor.RED
 
+    if not summary:
+        return colorize(format_header('No tests run!'), AnsiColor.BOLD)
+
     summary_string = '{} in {} seconds'.format(
         ', '.join(summary),
         round(timing.total_seconds(), 2),

@@ -85,6 +85,15 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
             'vulnerabilities are found).'
         ),
     )
+    parser.add_argument(
+        '--ignore-non-vulnerable',
+        action='store_true',
+        help=(
+            'Excludes all non-vulnerable operations from tests. This is '
+            'especially handy when you *only* want to check for '
+            'vulnerabilities (rather than Swagger accuracy).'
+        ),
+    )
 
     parser.add_argument(
         '--disable-unicode',
