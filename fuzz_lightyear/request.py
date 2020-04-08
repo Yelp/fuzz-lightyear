@@ -8,6 +8,7 @@ from typing import List
 from typing import Optional
 from urllib.parse import quote_plus
 from urllib.parse import urlencode
+import json
 
 from bravado.client import CallableOperation
 from bravado_core.param import get_param_type_spec      # type: ignore
@@ -119,9 +120,28 @@ class FuzzingRequest:
         if 'formData' in data:
             args.append(f'--data \'{urlencode(data["formData"])}\'')
 
-        if 'header' in data:
-            for key, value in data['header'].items():
-                args.append(f'-H \'{key}: {value}\'')
+        if 'body' in data:
+            # NOTE: The first `body` key specifies where it's found.
+            #       The second specifies the object that was fuzzed.
+            #       Since there's only *one* body parameter (with a variable
+            #       name), we can parse it out as such.
+            args.append(f'--data \'{json.dumps(list(data["body"].values())[0])}\'')
+            data['header'] = data.get('header', {})
+            data['header']['Content-Type'] = 'application/json'
+
+        # NOTE: We default to using the victim's auth headers, assuming that
+        # this function is primarily used for easy reproduction (in which,
+        # it should not matter the specific session that we use).
+        headers = data.get('header', {})
+        headers.update(
+            get_victim_session_factory()().get(
+                '_request_options', {},
+            ).get(
+                'headers', {},
+            )
+        )
+        for key, value in headers.items():
+            args.append(f'-H \'{key}: {value}\'')
 
         return f'curl -X {data["method"]} {url} {" ".join(args)}'.rstrip()
 

@@ -1,4 +1,5 @@
 import base64
+import json
 import os
 
 import pytest
@@ -37,7 +38,8 @@ def test_json(mock_client):
     assert str(request) == (
         f'curl -X POST {URL}/location/path?query=a '
         '--data \'form=b\' '
-        '-H \'header: c\''
+        '-H \'header: c\' '
+        '-H \'Cookie: session=victim_session\''
     )
     assert repr(request) == 'FuzzingRequest(location.post_various_locations)'
 
@@ -49,6 +51,23 @@ def test_send_basic_request(mock_client):
     )
 
     assert request.send().session == 'victim_session'
+
+
+def test_send_body(mock_client):
+    request = FuzzingRequest(
+        operation_id='post_nested_model',
+        tag='complex',
+    )
+
+    # We need to trigger the parameters to be fuzzed.
+    request.send()
+
+    assert str(request) == (
+        f'curl -X POST {URL}/complex/nested '
+        f'--data \'{json.dumps(request.fuzzed_input["payload"])}\' '
+        '-H \'Content-Type: application/json\' '
+        '-H \'Cookie: session=victim_session\''
+    )
 
 
 def test_send_specified_auth(mock_client):
@@ -70,7 +89,8 @@ def test_str_encodes_array_path_parameters(mock_client):
     )
     request.send()
     assert str(request) == (
-        f'curl -X GET {URL}/types/path_array/1%2C2%2C3'
+        f'curl -X GET {URL}/types/path_array/1%2C2%2C3 '
+        '-H \'Cookie: session=victim_session\''
     )
 
 
@@ -83,7 +103,10 @@ def test_str_encodes_array_query_parameters(mock_client):
             False,
         ],
     )
-    assert str(request) == f'curl -X GET {URL}/types/array?array=True&array=False'
+    assert str(request) == (
+        f'curl -X GET {URL}/types/array?array=True&array=False '
+        '-H \'Cookie: session=victim_session\''
+    )
 
 
 @pytest.mark.parametrize(
