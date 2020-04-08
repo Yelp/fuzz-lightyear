@@ -1,8 +1,8 @@
+import warnings
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
-import warnings
 
 import requests
 import simplejson

@@ -17,6 +17,9 @@ from .logging import root_logger
 
 class ResultFormatter:
     def __init__(self) -> None:
+        if not sys.stdout.isatty():
+            get_settings().enable_color = False
+
         print(
             colorize(
                 formatter.format_header('fuzzing session starts', header_line='='),
