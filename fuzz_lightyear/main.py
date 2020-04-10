@@ -18,7 +18,7 @@ from .generator import generate_sequences
 from .output.interface import ResultFormatter
 from .output.logging import log
 from .output.util import print_error
-from .runner import run_sequence
+from .runner import validate_sequence
 from .settings import get_settings
 from .supplements.abstraction import get_abstraction
 from .usage import parse_args
@@ -127,7 +127,7 @@ def run_tests(
         tests=tests,
     ):
         try:
-            run_sequence(result.requests, result.responses)
+            validate_sequence(result.requests, result.responses)
         except Exception as e:
             if (
                 ignore_exceptions and

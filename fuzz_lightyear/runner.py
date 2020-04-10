@@ -1,4 +1,7 @@
+from typing import Any
+from typing import Dict
 from typing import List
+from typing import Optional
 
 from .datastore import clear_cache
 from .datastore import get_user_defined_mapping
@@ -6,14 +9,29 @@ from .request import FuzzingRequest
 from .response import ResponseSequence
 
 
-def run_sequence(
+def validate_sequence(
     sequence: List[FuzzingRequest],
     responses: ResponseSequence,
 ) -> ResponseSequence:
+
+    run_sequence(sequence, responses)
+    # Then, check for vulnerabilities.
+    responses.analyze_requests(sequence)
+    clear_cache()
+    return responses
+
+
+def run_sequence(
+    sequence: List[FuzzingRequest],
+    responses: ResponseSequence,
+    auth: Optional[Dict[str, Any]] = None,
+) -> ResponseSequence:
+
     # First, determine whether this is a successful request sequence.
     for request in sequence:
         response = request.send(
             data=responses.data,
+            auth=auth,
         )
 
         responses.add_response(response)
@@ -26,8 +44,4 @@ def run_sequence(
         for key in request.fuzzed_input:                            # type: ignore
             if key in get_user_defined_mapping():
                 responses.data[key] = request.fuzzed_input[key]     # type: ignore
-
-    # Then, check for vulnerabilities.
-    responses.analyze_requests(sequence)
-    clear_cache()
     return responses
