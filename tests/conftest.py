@@ -1,5 +1,3 @@
-import sys
-
 import pytest
 
 from fuzz_lightyear.datastore import _ALL_POST_FUZZ_HOOKS_BY_OPERATION

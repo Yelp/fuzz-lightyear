@@ -12,6 +12,8 @@ from bravado.exception import HTTPError
 from hypothesis.errors import NonInteractiveExampleWarning
 from swagger_spec_validator.common import SwaggerValidationError    # type: ignore
 
+from .datastore import get_excluded_operations
+from .datastore import get_non_vulnerable_operations
 from .datastore import get_setup_fixtures
 from .discovery import import_fixtures
 from .generator import generate_sequences
@@ -43,6 +45,10 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     setup_fixtures(args.fixture)
     run_user_defined_setup()
+    if args.ignore_non_vulnerable:
+        get_excluded_operations().update(
+            get_non_vulnerable_operations(),
+        )
 
     outputter = run_tests(
         *args.test,

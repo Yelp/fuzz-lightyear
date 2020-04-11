@@ -10,3 +10,10 @@ def attacker_account():
             },
         },
     }
+
+
+@fuzz_lightyear.exclude.non_vulnerable_operations
+def specify_non_vulnerable_operations():
+    return (
+        'basic.get_public_listing',
+    )

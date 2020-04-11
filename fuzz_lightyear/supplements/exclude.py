@@ -61,7 +61,7 @@ def operations(func: Callable) -> Callable:
         Ignoring operations specified by "tag.operation_id" in lists
             >>> @fuzz_lightyear.exclude.operations
             ... def c():
-                    return ['pets.get_pets', 'store.get_store_inventory']
+            ...     return ['pets.get_pets', 'store.get_store_inventory']
     """
     get_operations_fn = _get_formatted_operations(func)
     get_excluded_operations().update(get_operations_fn())
