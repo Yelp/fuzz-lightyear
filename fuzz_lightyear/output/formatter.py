@@ -131,6 +131,7 @@ def format_summary(
     num_failures = stats['failure']
     num_warnings = stats['warnings']
 
+    color = AnsiColor.RESET
     summary = []
     if num_passed:
         summary.append(f'{num_passed} passed')
@@ -147,10 +148,13 @@ def format_summary(
     if not summary:
         return colorize(format_header('No tests run!'), AnsiColor.BOLD)
 
-    summary_string = '{} in {} seconds'.format(
-        ', '.join(summary),
-        round(timing.total_seconds(), 2),
-    )
+    if color == AnsiColor.RESET:
+        summary_string = 'No tests run'
+    else:
+        summary_string = '{} in {} seconds'.format(
+            ', '.join(summary),
+            round(timing.total_seconds(), 2),
+        )
 
     return colorize(
         colorize(
