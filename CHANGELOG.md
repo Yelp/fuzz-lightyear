@@ -21,10 +21,37 @@ If you love `fuzz-lightyear`, please star our project on GitHub to show your sup
 [#xxxx]: https://github.com/Yelp/detect-secrets-server/pull/xxxx
 [@xxxx]: https://github.com/xxxx
 -->
+### 0.0.8
+##### August 17, 2020
+
+#### :tada: New Features
+
+- Rerun all requests in requests sequences with attacker credentials ([#44])
+
+#### :sparkles: Usability
+
+- Add the `--ignore-non-vulnerable` flag to not include any non-vulnerable
+operations in request sequences ([#53])
+
+#### :bug: Bug Fixes
+
+#### :snake: Miscellaneous
+
+- Reduce test noise from third-party libraries ([#46], [#49])
+- Disable color printing when not printing to terminal ([#51])
+
+[#44]: https://github.com/Yelp/fuzz-lightyear/pull/44
+[#46]: https://github.com/Yelp/fuzz-lightyear/pull/46
+[#49]: https://github.com/Yelp/fuzz-lightyear/pull/49
+[#51]: https://github.com/Yelp/fuzz-lightyear/pull/51
+[#53]: https://github.com/Yelp/fuzz-lightyear/pull/53
+
 ### 0.0.7
 ##### :bug: Bug Fixes
 
 - Prevent side-effects upon argument merging in `FuzzingRequest.send` ([#45])
+
+[#45]: https://github.com/Yelp/fuzz-lightyear/pull/45
 
 ### 0.0.6
 ##### :tada: New Features
@@ -35,6 +62,9 @@ If you love `fuzz-lightyear`, please star our project on GitHub to show your sup
 
 - Pin a minimum version for the hypothesis dependency ([#42])
 
+[#41]: https://github.com/Yelp/fuzz-lightyear/pull/41
+[#42]: https://github.com/Yelp/fuzz-lightyear/pull/42
+
 ### 0.0.5
 ##### :mega: Release Highlights
 
@@ -43,6 +73,9 @@ If you love `fuzz-lightyear`, please star our project on GitHub to show your sup
 #### :tada: New Features
 
 - Support YAML Swagger schema files ([#39])
+
+[#37]: https://github.com/Yelp/fuzz-lightyear/pull/37
+[#39]: https://github.com/Yelp/fuzz-lightyear/pull/39
 
 ### 0.0.4
 ##### :tada: New Features
@@ -60,6 +93,11 @@ which transform fuzzed input ([#36])
 
 - Fix dynamic fixture imports for modules which end in `(\.py)+` ([#33])
 
+[#31]: https://github.com/Yelp/fuzz-lightyear/pull/31
+[#32]: https://github.com/Yelp/fuzz-lightyear/pull/32
+[#33]: https://github.com/Yelp/fuzz-lightyear/pull/33
+[#34]: https://github.com/Yelp/fuzz-lightyear/pull/34
+
 ### 0.0.3
 ##### October 18, 2019
 
@@ -74,3 +112,7 @@ which transform fuzzed input ([#36])
 - Fuzzed headers no longer try to include non-ascii characters ([#24])
 - Fuzzed headers no longer override user-specified headers ([#24])
 - Null data is no longer saved in the request's state ([#24])
+
+[#24]: https://github.com/Yelp/fuzz-lightyear/pull/24
+[#27]: https://github.com/Yelp/fuzz-lightyear/pull/27
+[#28]: https://github.com/Yelp/fuzz-lightyear/pull/28
