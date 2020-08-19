@@ -1,3 +1,4 @@
+import json
 from collections import defaultdict
 from functools import lru_cache
 from typing import Any
@@ -8,7 +9,6 @@ from typing import List
 from typing import Optional
 from urllib.parse import quote_plus
 from urllib.parse import urlencode
-import json
 
 from bravado.client import CallableOperation
 from bravado_core.param import get_param_type_spec      # type: ignore
@@ -138,7 +138,7 @@ class FuzzingRequest:
                 '_request_options', {},
             ).get(
                 'headers', {},
-            )
+            ),
         )
         for key, value in headers.items():
             args.append(f'-H \'{key}: {value}\'')
