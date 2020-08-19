@@ -21,6 +21,11 @@ If you love `fuzz-lightyear`, please star our project on GitHub to show your sup
 [#xxxx]: https://github.com/Yelp/detect-secrets-server/pull/xxxx
 [@xxxx]: https://github.com/xxxx
 -->
+### 0.0.9
+##### August 19, 2020
+
+- Fix tests by adding a trailing comma
+
 ### 0.0.8
 ##### August 17, 2020
 
