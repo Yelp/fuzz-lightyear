@@ -219,7 +219,7 @@ We can use fixtures to specify authentication/authorization methods to the Swagg
 specification. This allows developers to customize the use of session cookies, or API
 tokens, depending on individual use cases.
 
-These fixtures are required for the `IDORPlugin`.
+These fixtures are required for the `IDORPlugin`. We can include an `operation_id` argument in the fixture so that the operation id is automatically passed in. Other arguments will not be fuzzed.
 
 ```python
 """

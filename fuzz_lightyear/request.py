@@ -135,8 +135,8 @@ class FuzzingRequest:
         # it should not matter the specific session that we use).
         headers = data.get('header', {})
 
-        victim_headers = get_victim_session_factory()
-        header_args = inspect.getfullargspec(victim_headers)
+        victim_headers_func = get_victim_session_factory()
+        header_args = inspect.getfullargspec(victim_headers_func)
         if header_args.args == ['operation_id']:
             victim_headers = get_victim_session_factory()(self.operation_id)
         else:
@@ -155,7 +155,7 @@ class FuzzingRequest:
 
     def send(
         self,
-        auth: Optional[Dict[str, Any]] = None,
+        auth: Optional[Callable[..., Dict[str, Any]]] = None,
         *args: Any,
         should_log: bool = True,
         data: Optional[Dict[str, Any]] = None,
@@ -190,18 +190,18 @@ class FuzzingRequest:
             auth = get_victim_session_factory()
         header_args = inspect.getfullargspec(auth)
         if header_args.args == ['operation_id']:
-            auth = auth(self.operation_id)
+            auth_header = auth(self.operation_id)
         else:
-            auth = auth()
+            auth_header = auth()
 
         if should_log:
             log.info(str(self))
 
-        _merge_auth_headers(self.fuzzed_input, auth)
+        _merge_auth_headers(self.fuzzed_input, auth_header)
 
         # auth details should override fuzzed_input, because
         # specifics should always override randomly generated content
-        kwargs = _merge_kwargs(self.fuzzed_input, auth, kwargs)
+        kwargs = _merge_kwargs(self.fuzzed_input, auth_header, kwargs)
 
         return get_abstraction().request_method(
             operation_id=self.operation_id,

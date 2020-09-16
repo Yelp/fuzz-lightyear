@@ -1,4 +1,5 @@
 from typing import Any
+from typing import Callable
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -24,7 +25,7 @@ def validate_sequence(
 def run_sequence(
     sequence: List[FuzzingRequest],
     responses: ResponseSequence,
-    auth: Optional[Dict[str, Any]] = None,
+    auth: Optional[Callable[..., Dict[str, Any]]] = None,
 ) -> ResponseSequence:
 
     # First, determine whether this is a successful request sequence.

@@ -77,8 +77,29 @@ def test_send_specified_auth(mock_client):
     )
 
     assert request.send(
-        auth=get_abstraction().get_attacker_session(),
+        auth=get_abstraction().get_attacker_session,
     ).session == 'attacker_session'
+
+
+def test_send_endpoint_auth(mock_client):
+    request = FuzzingRequest(
+        operation_id='get_no_inputs_required',
+        tag='basic',
+    )
+
+    fuzz_lightyear.attacker_account(
+        lambda operation_id: {
+            '_request_options': {
+                'headers': {
+                    'Cookie': 'session=' + operation_id,
+                },
+            },
+        },
+    )
+
+    assert request.send(
+        auth=get_abstraction().get_attacker_session,
+    ).session == 'get_no_inputs_required'
 
 
 def test_str_encodes_array_path_parameters(mock_client):
