@@ -1,3 +1,4 @@
+import inspect
 import json
 from collections import defaultdict
 from functools import lru_cache
@@ -133,8 +134,15 @@ class FuzzingRequest:
         # this function is primarily used for easy reproduction (in which,
         # it should not matter the specific session that we use).
         headers = data.get('header', {})
+
+        victim_headers = get_victim_session_factory()
+        header_args = inspect.getfullargspec(victim_headers)
+        if header_args.args == ['operation_id']:
+            victim_headers = get_victim_session_factory()(self.operation_id)
+        else:
+            victim_headers = get_victim_session_factory()()
         headers.update(
-            get_victim_session_factory()().get(
+            victim_headers.get(
                 '_request_options', {},
             ).get(
                 'headers', {},
@@ -179,7 +187,12 @@ class FuzzingRequest:
             self.apply_post_fuzz_hooks(self.fuzzed_input, rerun=True)
 
         if not auth:
-            auth = get_victim_session_factory()()
+            auth = get_victim_session_factory()
+        header_args = inspect.getfullargspec(auth)
+        if header_args.args == ['operation_id']:
+            auth = auth(self.operation_id)
+        else:
+            auth = auth()
 
         if should_log:
             log.info(str(self))
