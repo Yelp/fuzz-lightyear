@@ -20,6 +20,7 @@ from .datastore import get_post_fuzz_hooks
 from .fuzzer import fuzz_parameters
 from .output.logging import log
 from .output.util import print_warning
+from .settings import get_settings
 from .supplements.abstraction import get_abstraction
 
 COLLECTION_FORMAT_CHARS = {
@@ -137,7 +138,7 @@ class FuzzingRequest:
 
         victim_headers_func = get_victim_session_factory()
         header_args = inspect.getfullargspec(victim_headers_func)
-        if header_args.args == ['operation_id']:
+        if get_settings().endpoint_headers and header_args.args == ['operation_id']:
             victim_headers = get_victim_session_factory()(self.operation_id)
         else:
             victim_headers = get_victim_session_factory()()
@@ -189,7 +190,7 @@ class FuzzingRequest:
         if not auth:
             auth = get_victim_session_factory()
         header_args = inspect.getfullargspec(auth)
-        if header_args.args == ['operation_id']:
+        if get_settings().endpoint_headers and header_args.args == ['operation_id']:
             auth_header = auth(self.operation_id)
         else:
             auth_header = auth()

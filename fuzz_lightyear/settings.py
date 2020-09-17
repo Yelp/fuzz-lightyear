@@ -9,6 +9,7 @@ class Settings:
         self.seed = random.getrandbits(128)    # type: int
         self.unicode_enabled = True            # type: bool
         self.enable_color = True               # type: bool
+        self.endpoint_headers = False
 
     @property
     def seed(self) -> int:

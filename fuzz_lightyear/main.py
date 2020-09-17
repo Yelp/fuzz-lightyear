@@ -56,6 +56,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         seed=args.seed,
         ignore_exceptions=args.ignore_exceptions,
         disable_unicode=args.disable_unicode,
+        enable_endpoint_headers=args.enable_endpoint_headers,
     )
 
     outputter.show_results()
@@ -112,6 +113,7 @@ def run_tests(
     seed: int = None,
     ignore_exceptions: bool = False,
     disable_unicode: bool = False,
+    enable_endpoint_headers: bool = False,
 ) -> ResultFormatter:
     """
     :param tests: list of tests to run.
@@ -126,6 +128,8 @@ def run_tests(
         get_settings().seed = seed
     if disable_unicode:
         get_settings().unicode_enabled = False
+    if enable_endpoint_headers:
+        get_settings().endpoint_headers = True
 
     outputter = ResultFormatter()
     for result in generate_sequences(

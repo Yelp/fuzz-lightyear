@@ -104,6 +104,15 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         ),
     )
 
+    parser.add_argument(
+        '--enable-endpoint-headers',
+        action='store_true',
+        help=(
+            'Enable passing in endpoints to the header fixtures. This '
+            'disables injecting variables into the header fixtures.'
+        ),
+    )
+
     return parser.parse_args(argv)
 
 
