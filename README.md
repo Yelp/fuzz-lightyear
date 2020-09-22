@@ -48,22 +48,20 @@ positional arguments:
   url                   URL of server to fuzz.
 
 optional arguments:
-  -h, --help                  show this help message and exit
-  -v, --verbose               Increase the verbosity of logging.
-  --version                   Displays version information.
+  -h, --help            show this help message and exit
+  -v, --verbose         Increase the verbosity of logging.
+  --version             Displays version information.
   -n [ITERATIONS], --iterations [ITERATIONS]
-                              Maximum request sequence length to fuzz.
-  --schema SCHEMA             Path to local swagger schema. If provided, this
-                              overrides theswagger file found at the URL.
+                        Maximum request sequence length to fuzz.
+  --schema SCHEMA       Path to local swagger schema. If provided, this
+                        overrides theswagger file found at the URL.
   -f FIXTURE, --fixture FIXTURE
-                              Path to custom specified fixtures.
-  --seed SEED                 Specify seed for generation of random output.
-  -t TEST, --test TEST        Specifies a single test to run.
-  --ignore-exceptions         Ignores all exceptions raised during fuzzing (aka.
-                              only fails when vulnerabilities are found).
-  --disable-unicode           Disable unicode characters in fuzzing, only use ASCII.
-  --enable-endpoint-headers   Pass in the operation id to the header fixture.
-                              Disables variable injection for headers.
+                        Path to custom specified fixtures.
+  --seed SEED           Specify seed for generation of random output.
+  -t TEST, --test TEST  Specifies a single test to run.
+  --ignore-exceptions   Ignores all exceptions raised during fuzzing (aka.
+                        only fails when vulnerabilities are found).
+  --disable-unicode     Disable unicode characters in fuzzing, only use ASCII.
 
 ```
 
@@ -221,7 +219,7 @@ We can use fixtures to specify authentication/authorization methods to the Swagg
 specification. This allows developers to customize the use of session cookies, or API
 tokens, depending on individual use cases.
 
-These fixtures are required for the `IDORPlugin`. If we use the `--enable-endpoint-headers`argument, we can include an `operation_id` argument in the fixture so that the operation id is automatically passed in. Other arguments will not be fuzzed.
+These fixtures are required for the `IDORPlugin`. We can include an `operation_id` argument in the fixture so that the operation id is automatically passed in. Other arguments will not be fuzzed.
 
 ```python
 """

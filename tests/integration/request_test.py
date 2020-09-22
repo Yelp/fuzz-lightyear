@@ -1,13 +1,11 @@
 import base64
 import json
 import os
-from unittest import mock
 
 import pytest
 
 import fuzz_lightyear
 from fuzz_lightyear.request import FuzzingRequest
-from fuzz_lightyear.settings import Settings
 from fuzz_lightyear.supplements.abstraction import get_abstraction
 from testing.mock_server import URL
 
@@ -84,32 +82,24 @@ def test_send_specified_auth(mock_client):
 
 
 def test_send_endpoint_auth(mock_client):
-    fake_settings = Settings()
-    fake_settings.endpoint_headers = True
-    with mock.patch(
-        'fuzz_lightyear.request.get_settings',
-        return_value=fake_settings,
-    ), mock.patch(
-        'fuzz_lightyear.supplements.auth.get_settings',
-        return_value=fake_settings,
-    ):
-        request = FuzzingRequest(
-            operation_id='get_no_inputs_required',
-            tag='basic',
-        )
+    request = FuzzingRequest(
+        operation_id='get_no_inputs_required',
+        tag='basic',
+    )
 
-        fuzz_lightyear.attacker_account(
-            lambda operation_id: {
-                '_request_options': {
-                    'headers': {
-                        'Cookie': 'session=' + operation_id,
-                    },
+    fuzz_lightyear.attacker_account(
+        lambda operation_id: {
+            '_request_options': {
+                'headers': {
+                    'Cookie': 'session=' + operation_id,
                 },
             },
-        )
-        assert request.send(
-            auth=get_abstraction().get_attacker_session,
-        ).session == 'get_no_inputs_required'
+        },
+    )
+
+    assert request.send(
+        auth=get_abstraction().get_attacker_session,
+    ).session == 'get_no_inputs_required'
 
 
 def test_str_encodes_array_path_parameters(mock_client):
