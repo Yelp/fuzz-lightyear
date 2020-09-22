@@ -18,4 +18,4 @@ class FuzzingResult:
         self.exception_info = {}            # type: Dict[str, Any]
 
     def is_successful(self) -> bool:
-        return bool(self.responses)
+        return bool(self.responses) and len(self.responses) == len(self.requests)

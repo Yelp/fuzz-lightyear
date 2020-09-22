@@ -121,7 +121,8 @@ def test_length_three(mock_client):
     sequences = []
     for result in generate_sequences(3):
         if not result.requests[-1].operation_id.endswith('will_throw_error'):
-            result.responses = True
+            # This is a hacky way to mock responses, without actually fuzzing it.
+            result.responses = [True for _ in range(len(result.requests))]
 
         sequences.append(result.requests)
 
