@@ -17,6 +17,7 @@ from cached_property import cached_property             # type: ignore
 from hypothesis.strategies import SearchStrategy
 
 from .datastore import get_post_fuzz_hooks
+from .datastore import inject_user_defined_variables
 from .fuzzer import fuzz_parameters
 from .output.logging import log
 from .output.util import print_warning
@@ -136,11 +137,7 @@ class FuzzingRequest:
         headers = data.get('header', {})
 
         victim_headers_func = get_victim_session_factory()
-        header_args = inspect.getfullargspec(victim_headers_func)
-        if header_args.args == ['operation_id']:
-            victim_headers = get_victim_session_factory()(self.operation_id)
-        else:
-            victim_headers = get_victim_session_factory()()
+        victim_headers = _get_auth_header(victim_headers_func, self.operation_id)
         headers.update(
             victim_headers.get(
                 '_request_options', {},
@@ -188,11 +185,7 @@ class FuzzingRequest:
 
         if not auth:
             auth = get_victim_session_factory()
-        header_args = inspect.getfullargspec(auth)
-        if header_args.args == ['operation_id']:
-            auth_header = auth(self.operation_id)
-        else:
-            auth_header = auth()
+        auth_header = _get_auth_header(auth, self.operation_id)
 
         if should_log:
             log.info(str(self))
@@ -284,7 +277,7 @@ def get_victim_session_factory() -> Callable[..., Dict[str, Any]]:
         return factory
 
     print_warning('No auth method specified.')
-    return lambda: {}
+    return inject_user_defined_variables(lambda: {})
 
 
 def _merge_auth_headers(fuzzed_params: Dict[str, Any], auth: Dict[str, Any]) -> None:
@@ -338,3 +331,12 @@ def _merge_kwargs(*args: Any) -> Dict[str, Any]:
     output['_request_options']['headers'] = headers
 
     return output
+
+
+def _get_auth_header(func: Callable[..., Dict[str, Any]], op_id: str) -> Dict[str, Any]:
+    header_args = inspect.getfullargspec(func.__wrapped__)  # type: ignore
+    if 'operation_id' in header_args.args:
+        auth_header = func(op_id)
+    else:
+        auth_header = func()
+    return auth_header

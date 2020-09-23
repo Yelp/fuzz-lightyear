@@ -167,7 +167,8 @@ def inject_user_defined_variables(func: Callable) -> Callable:
 
     @wraps(func)
     def wrapped(*args: Any, **kwargs: Any) -> Any:
-        if getattr(func, '_fuzz_cache', None) is not None:
+        if getattr(func, '_fuzz_cache', None) is not None \
+                and func._arg_cache == [args, kwargs]:  # type: ignore
             return func._fuzz_cache  # type: ignore
 
         expected_args = _get_injectable_variables(func)
@@ -194,6 +195,7 @@ def inject_user_defined_variables(func: Callable) -> Callable:
 
             kwargs[arg_name] = value
 
+        func._arg_cache = [args, kwargs]  # type: ignore
         func._fuzz_cache = func(*args, **kwargs)  # type: ignore
         return func._fuzz_cache  # type: ignore
 
