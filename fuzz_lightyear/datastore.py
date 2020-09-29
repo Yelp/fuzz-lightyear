@@ -167,9 +167,10 @@ def inject_user_defined_variables(func: Callable) -> Callable:
 
     @wraps(func)
     def wrapped(*args: Any, **kwargs: Any) -> Any:
+        arg_tuple = (args, tuple(sorted(kwargs)))
         if getattr(func, '_fuzz_cache', None) is not None \
-                and func._arg_cache == [args, kwargs]:  # type: ignore
-            return func._fuzz_cache  # type: ignore
+                and arg_tuple in func._fuzz_cache:  # type: ignore
+            return func._fuzz_cache[arg_tuple]  # type: ignore
 
         expected_args = _get_injectable_variables(func)
         type_annotations = inspect.getfullargspec(func).annotations
@@ -186,8 +187,8 @@ def inject_user_defined_variables(func: Callable) -> Callable:
 
             value = mapping[arg_name]()
             if (
-                arg_name in type_annotations and
-                not isinstance(type_annotations[arg_name], type(List))
+                arg_name in type_annotations
+                and not isinstance(type_annotations[arg_name], type(List))
             ):
                 # If type annotations are used, use that to cast
                 # values for input.
@@ -195,9 +196,11 @@ def inject_user_defined_variables(func: Callable) -> Callable:
 
             kwargs[arg_name] = value
 
-        func._arg_cache = [args, kwargs]  # type: ignore
-        func._fuzz_cache = func(*args, **kwargs)  # type: ignore
-        return func._fuzz_cache  # type: ignore
+        if getattr(func, '_fuzz_cache', None) is not None:
+            func._fuzz_cache[arg_tuple] = func(*args, **kwargs)  # type: ignore
+        else:
+            func._fuzz_cache = {arg_tuple: func(*args, **kwargs)}  # type: ignore
+        return func._fuzz_cache[arg_tuple]  # type: ignore
 
     return wrapped
 
