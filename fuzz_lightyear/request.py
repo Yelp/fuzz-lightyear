@@ -1,3 +1,4 @@
+import inspect
 import json
 from collections import defaultdict
 from functools import lru_cache
@@ -16,6 +17,7 @@ from cached_property import cached_property             # type: ignore
 from hypothesis.strategies import SearchStrategy
 
 from .datastore import get_post_fuzz_hooks
+from .datastore import inject_user_defined_variables
 from .fuzzer import fuzz_parameters
 from .output.logging import log
 from .output.util import print_warning
@@ -133,8 +135,11 @@ class FuzzingRequest:
         # this function is primarily used for easy reproduction (in which,
         # it should not matter the specific session that we use).
         headers = data.get('header', {})
+
+        victim_headers_func = get_victim_session_factory()
+        victim_headers = _get_auth_header(victim_headers_func, self.operation_id)
         headers.update(
-            get_victim_session_factory()().get(
+            victim_headers.get(
                 '_request_options', {},
             ).get(
                 'headers', {},
@@ -147,7 +152,7 @@ class FuzzingRequest:
 
     def send(
         self,
-        auth: Optional[Dict[str, Any]] = None,
+        auth: Optional[Callable[..., Dict[str, Any]]] = None,
         *args: Any,
         should_log: bool = True,
         data: Optional[Dict[str, Any]] = None,
@@ -179,16 +184,17 @@ class FuzzingRequest:
             self.apply_post_fuzz_hooks(self.fuzzed_input, rerun=True)
 
         if not auth:
-            auth = get_victim_session_factory()()
+            auth = get_victim_session_factory()
+        auth_header = _get_auth_header(auth, self.operation_id)
 
         if should_log:
             log.info(str(self))
 
-        _merge_auth_headers(self.fuzzed_input, auth)
+        _merge_auth_headers(self.fuzzed_input, auth_header)
 
         # auth details should override fuzzed_input, because
         # specifics should always override randomly generated content
-        kwargs = _merge_kwargs(self.fuzzed_input, auth, kwargs)
+        kwargs = _merge_kwargs(self.fuzzed_input, auth_header, kwargs)
 
         return get_abstraction().request_method(
             operation_id=self.operation_id,
@@ -271,7 +277,7 @@ def get_victim_session_factory() -> Callable[..., Dict[str, Any]]:
         return factory
 
     print_warning('No auth method specified.')
-    return lambda: {}
+    return inject_user_defined_variables(lambda: {})
 
 
 def _merge_auth_headers(fuzzed_params: Dict[str, Any], auth: Dict[str, Any]) -> None:
@@ -325,3 +331,12 @@ def _merge_kwargs(*args: Any) -> Dict[str, Any]:
     output['_request_options']['headers'] = headers
 
     return output
+
+
+def _get_auth_header(func: Callable[..., Dict[str, Any]], op_id: str) -> Dict[str, Any]:
+    header_args = inspect.getfullargspec(func.__wrapped__)  # type: ignore
+    if 'operation_id' in header_args.args:
+        auth_header = func(op_id)
+    else:
+        auth_header = func()
+    return auth_header

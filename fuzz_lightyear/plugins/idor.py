@@ -39,11 +39,11 @@ class IDORPlugin(BasePlugin):
         run_sequence(
             sequence=request_sequence[:-1],
             responses=ResponseSequence(),
-            auth=get_abstraction().get_attacker_session(),  # type: ignore
+            auth=get_abstraction().get_attacker_session,
         )
         try:
             request_sequence[-1].send(
-                auth=get_abstraction().get_attacker_session(),  # type: ignore
+                auth=get_abstraction().get_attacker_session,
                 should_log=False,
             )
             return True
