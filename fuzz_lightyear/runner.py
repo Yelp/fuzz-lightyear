@@ -44,5 +44,6 @@ def run_sequence(
         # having the fuzzing engine constantly generate new objects.
         for key in request.fuzzed_input:                            # type: ignore
             if key in get_user_defined_mapping():
-                responses.data[key] = request.fuzzed_input[key]     # type: ignore
+                if get_user_defined_mapping()[key][request.operation_id] is not None:
+                    responses.data[key] = request.fuzzed_input[key]     # type: ignore
     return responses

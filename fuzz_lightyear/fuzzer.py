@@ -17,16 +17,18 @@ from .settings import get_settings
 
 def fuzz_parameters(
     parameters: List[Tuple[str, Dict[str, Any]]],
+    operation_id: str,
 ) -> SearchStrategy:
     output = {}
     for name, parameter in parameters:
-        output[name] = _fuzz_parameter(parameter)
+        output[name] = _fuzz_parameter(parameter, operation_id)
 
     return st.fixed_dictionaries(output)
 
 
 def _fuzz_parameter(
     parameter: Dict[str, Any],
+    operation_id: str,
     required: bool = False,
 ) -> SearchStrategy:
     """
@@ -55,7 +57,7 @@ def _fuzz_parameter(
             ),
         )
 
-    strategy = _get_strategy_from_factory(_type, parameter.get('name'))
+    strategy = _get_strategy_from_factory(_type, operation_id, parameter.get('name'))
 
     if not strategy:
         if 'enum' in parameter:
@@ -63,7 +65,7 @@ def _fuzz_parameter(
 
         # As per https://swagger.io/docs/specification/data-models/data-types,
         # there are only a limited set of data types.
-        mapping = {     # type: ignore # mypy doesn't like dynamic function signatures
+        mapping = {
             'string': _fuzz_string,
             'number': _fuzz_number,
             'integer': _fuzz_integer,
@@ -74,18 +76,22 @@ def _fuzz_parameter(
             # TODO: handle `file` type
             # https://swagger.io/docs/specification/2-0/file-upload/
         }
-        strategy = mapping[_type](parameter, required=required)
+        fuzz_fn = mapping[_type]
+        if fuzz_fn in (_fuzz_object, _fuzz_array):
+            strategy = fuzz_fn(parameter, operation_id, required=required)  # type: ignore
+        else:
+            strategy = fuzz_fn(parameter, required=required)  # type: ignore
 
     # NOTE: We don't currently support `nullable` values, so we use `None` as a
     #       proxy to exclude the parameter from the final dictionary.
     if (
         # `name` check is used here as a heuristic to determine whether in
         # recursive call (arrays).
-        parameter.get('name')
-        and not required
+        parameter.get('name') and
+        not required
     ):
-        return st.one_of(st.none(), strategy)
-    return strategy
+        return st.one_of(st.none(), strategy)  # type: ignore
+    return strategy  # type: ignore
 
 
 def _fuzz_string(
@@ -161,6 +167,7 @@ def _fuzz_boolean(
 
 def _fuzz_array(
     parameter: Dict[str, Any],
+    operation_id: str,
     required: bool = False,
 ) -> SearchStrategy:
     item = parameter['items']
@@ -168,7 +175,7 @@ def _fuzz_array(
 
     # TODO: Handle `oneOf`
     strategy = st.lists(
-        elements=_fuzz_parameter(item, required=required),
+        elements=_fuzz_parameter(item, operation_id, required=required),
         min_size=parameter.get(
             'minItems',
             0 if not required else 1,
@@ -183,13 +190,18 @@ def _fuzz_array(
 
 def _fuzz_object(
     parameter: Dict[str, Any],
+    operation_id: str,
     **kwargs: Any,
 ) -> SearchStrategy:
     # TODO: Handle `additionalProperties`
     output = {}
     for name, specification in parameter['properties'].items():
         try:
-            strategy = _get_strategy_from_factory(specification['type'], name)
+            strategy = _get_strategy_from_factory(
+                specification['type'],
+                operation_id,
+                name,
+            )
         except KeyError:
             log.error(
                 'Invalid swagger specification: expected \'type\'. Got \'{}\''.format(
@@ -210,6 +222,7 @@ def _fuzz_object(
 
         output[name] = _fuzz_parameter(
             specification,
+            operation_id,
             bool(required),
         )
 
@@ -218,6 +231,7 @@ def _fuzz_object(
 
 def _get_strategy_from_factory(
     expected_type: str,
+    operation_id: str,
     name: Optional[str] = None,
 ) -> Optional[SearchStrategy[Any]]:
     if name not in get_user_defined_mapping():
@@ -225,7 +239,7 @@ def _get_strategy_from_factory(
 
     def type_cast() -> Any:
         """Use known types to cast output, if applicable."""
-        output = get_user_defined_mapping()[name]()
+        output = get_user_defined_mapping()[name][operation_id]()
         if output is None:
             # NOTE: We don't currently support `nullable` values, so we use `None`
             #       as a proxy to exclude the parameter from the final dictionary.

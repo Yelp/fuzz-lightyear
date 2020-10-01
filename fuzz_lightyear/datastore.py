@@ -103,9 +103,12 @@ def get_setup_fixtures() -> List:
 def get_user_defined_mapping() -> Dict:
     """
     This is essentially a global variable, within a function scope, because
-    this returns a reference to the cached dictionary.
+    this returns a reference to the cached dictionary. The mapping is a
+    dictionary with variable names as keys. The values are defaultdicts
+    mapping endpoints to fuzzing factories. If a default value does not
+    exist, then the default value will be None.
 
-    :rtype: dict(str => function)
+    :rtype: dict(str => defaultdict(str => function))
     """
     return {}
 
@@ -147,8 +150,9 @@ def get_non_vulnerable_operations() -> Dict[str, Optional[str]]:
 
 def clear_cache() -> None:
     """ Clear the cached values for fixture functions """
-    for value in get_user_defined_mapping().values():
-        value._fuzz_cache = None
+    for operation_ids in get_user_defined_mapping().values():
+        for value in operation_ids.values():
+            value._fuzz_cache = None
 
 
 def inject_user_defined_variables(func: Callable) -> Callable:
@@ -185,7 +189,8 @@ def inject_user_defined_variables(func: Callable) -> Callable:
             if arg_name not in mapping:
                 raise TypeError
 
-            value = mapping[arg_name]()
+            # We don't allow specific endpoints here, and only use the default.
+            value = mapping[arg_name].default_factory()()
             if (
                 arg_name in type_annotations
                 and not isinstance(type_annotations[arg_name], type(List))
