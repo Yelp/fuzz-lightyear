@@ -77,7 +77,7 @@ def test_booleans(mock_client, is_required):
     elif is_required is False:
         schema['required'] = False
 
-    factory = fuzz_parameters([('key', schema,)])
+    factory = fuzz_parameters([('key', schema,)], 'get_public_listing')
     if is_required:
         assert_randomness(factory, [True, False])
     else:
@@ -93,7 +93,7 @@ def test_integers(mock_client):
         'exclusiveMaximum': True,
     }
 
-    factory = fuzz_parameters([('key', schema,)])
+    factory = fuzz_parameters([('key', schema,)], 'get_public_listing')
 
     assert_randomness(factory, [None, 0, 1, 2, ])
 
@@ -101,16 +101,18 @@ def test_integers(mock_client):
 class TestArray:
 
     def test_basic(self, mock_client):
-        factory = fuzz_parameters([(
-            'key',
-            {
-                'name': 'key',
-                'type': 'array',
-                'items': {
-                    'type': 'boolean',
+        factory = fuzz_parameters(
+            [(
+                'key',
+                {
+                    'name': 'key',
+                    'type': 'array',
+                    'items': {
+                        'type': 'boolean',
+                    },
                 },
-            },
-        )])
+            )], 'get_public_listing',
+        )
 
         for _ in range(10):
             item_list = factory.example()['key']
@@ -121,22 +123,24 @@ class TestArray:
                 assert item in [None, True, False]
 
     def test_nested(self, mock_client):
-        factory = fuzz_parameters([(
-            'key',
-            {
-                'name': 'key',
-                'type': 'array',
-                'required': True,
-                'items': {
-                    # This is the `parent_list`
+        factory = fuzz_parameters(
+            [(
+                'key',
+                {
+                    'name': 'key',
                     'type': 'array',
+                    'required': True,
                     'items': {
-                        'type': 'boolean',
-                        'required': False,
+                        # This is the `parent_list`
+                        'type': 'array',
+                        'items': {
+                            'type': 'boolean',
+                            'required': False,
+                        },
                     },
                 },
-            },
-        )])
+            )], 'get_public_listing',
+        )
 
         for _ in range(10):
             for parent_list in factory.example()['key']:
@@ -151,24 +155,26 @@ class TestArray:
 class TestObject:
 
     def test_basic(self, mock_client):
-        factory = fuzz_parameters([(
-            'key',
-            {
-                'name': 'key',
-                'type': 'object',
-                'required': [
-                    'b',
-                ],
-                'properties': {
-                    'a': {
-                        'type': 'boolean',
-                    },
-                    'b': {
-                        'type': 'boolean',
+        factory = fuzz_parameters(
+            [(
+                'key',
+                {
+                    'name': 'key',
+                    'type': 'object',
+                    'required': [
+                        'b',
+                    ],
+                    'properties': {
+                        'a': {
+                            'type': 'boolean',
+                        },
+                        'b': {
+                            'type': 'boolean',
+                        },
                     },
                 },
-            },
-        )])
+            )], 'get_public_listing',
+        )
 
         for _ in range(10):
             obj = factory.example()['key']
@@ -194,24 +200,28 @@ class TestInvalidSchema:
 
     def test_no_type(self):
         with pytest.raises(SwaggerValidationError):
-            fuzz_parameters([(
-                'no_type_parameter',
-                {
-                    'name': 'no_type_parameter',
-                },
-            )])
+            fuzz_parameters(
+                [(
+                    'no_type_parameter',
+                    {
+                        'name': 'no_type_parameter',
+                    },
+                )], 'get_public_listing',
+            )
 
 
 class TestEnumeration:
 
     def test(self):
-        factory = fuzz_parameters([(
-            'key',
-            {
-                'type': 'string',
-                'enum': ['foo', 'bar'],
-            },
-        )])
+        factory = fuzz_parameters(
+            [(
+                'key',
+                {
+                    'type': 'string',
+                    'enum': ['foo', 'bar'],
+                },
+            )], 'get_public_listing',
+        )
 
         assert_randomness(factory, ['foo', 'bar'])
 
@@ -220,15 +230,17 @@ class TestEnumeration:
             return 'qux'
         fuzz_lightyear.register_factory('enumerated_field')(factory)
 
-        factory = fuzz_parameters([(
-            'enumerated_field',
-            {
-                'name': 'enumerated_field',
-                'type': 'string',
-                'enum': ['foo', 'bar'],
-                'required': True,
-            },
-        )])
+        factory = fuzz_parameters(
+            [(
+                'enumerated_field',
+                {
+                    'name': 'enumerated_field',
+                    'type': 'string',
+                    'enum': ['foo', 'bar'],
+                    'required': True,
+                },
+            )], 'get_public_listing',
+        )
 
         assert factory.example()['enumerated_field'] == 'qux'
 

@@ -10,7 +10,7 @@ def test_register_single_key():
 
     mapping = get_user_defined_mapping()
     assert len(mapping) == 1
-    assert mapping['a']() == 1
+    assert mapping['a']['opid']() == 1
 
 
 @pytest.mark.parametrize(
@@ -25,8 +25,8 @@ def test_register_multiple_keys(keys):
 
     mapping = get_user_defined_mapping()
     assert len(mapping) == 2
-    assert mapping['b']() == 2
-    assert mapping['c']() == 2
+    assert mapping['b']['opid']() == 2
+    assert mapping['c']['opid']() == 2
 
 
 def test_register_conflicting_key():
@@ -41,7 +41,7 @@ def test_register_conflicting_key():
 def test_basic():
     register_function('a', return_value=1)
 
-    assert get_user_defined_mapping()['a']() == 1
+    assert get_user_defined_mapping()['a']['opid']() == 1
 
 
 class TestInjectVariables:
@@ -52,7 +52,7 @@ class TestInjectVariables:
         fuzz_lightyear.register_factory('dependency')(self.dependency)
 
     def test_uses_default(self):
-        assert get_user_defined_mapping()['caller']() == 2
+        assert get_user_defined_mapping()['caller']['opid']() == 2
 
     def test_throws_error_when_no_default(self):
         def foobar(no_default):
@@ -60,16 +60,16 @@ class TestInjectVariables:
         fuzz_lightyear.register_factory('a')(foobar)
 
         with pytest.raises(TypeError):
-            get_user_defined_mapping()['a']()
+            get_user_defined_mapping()['a']['opid']()
 
     def test_nested_dependency(self):
-        assert get_user_defined_mapping()['nested_dependency']() == 4
+        assert get_user_defined_mapping()['nested_dependency']['opid']() == 4
 
     def test_re_registration(self):
         function = fuzz_lightyear.register_factory('a')(self.dependency)
         fuzz_lightyear.register_factory('b')(function)
 
-        assert get_user_defined_mapping()['b']() == 1
+        assert get_user_defined_mapping()['b']['opid']() == 1
 
     @staticmethod
     def nested_dependency(caller):
@@ -99,11 +99,11 @@ class TestTypeHinting:
         fuzz_lightyear.register_factory('custom_factory')(self.custom_factory)
 
     def test_type_hinting_for_nested_dependencies(self):
-        assert get_user_defined_mapping()['string_factory']() == 'test_string'
-        assert get_user_defined_mapping()['integer_factory']() == 2
+        assert get_user_defined_mapping()['string_factory']['opid']() == 'test_string'
+        assert get_user_defined_mapping()['integer_factory']['opid']() == 2
 
     def test_custom_type(self):
-        assert get_user_defined_mapping()['custom_factory']() == 3
+        assert get_user_defined_mapping()['custom_factory']['opid']() == 3
 
     @staticmethod
     def dependency():
