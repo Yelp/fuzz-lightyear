@@ -190,7 +190,10 @@ def inject_user_defined_variables(func: Callable) -> Callable:
                 raise TypeError
 
             # We don't allow specific endpoints here, and only use the default.
+            # If we don't have a default value, then we raise an error.
             value = mapping[arg_name].default_factory()()
+            if value is None:
+                raise TypeError
             if (
                 arg_name in type_annotations
                 and not isinstance(type_annotations[arg_name], type(List))

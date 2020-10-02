@@ -20,6 +20,10 @@ from fuzz_lightyear.exceptions import ConflictingKeys
 from fuzz_lightyear.util import listify_decorator_args
 
 
+def _none_func() -> None:
+    return None
+
+
 def register_factory(
     keys: Union[str, Iterable[str]],
     endpoints: Union[str, Iterable[str]] = None,
@@ -101,14 +105,14 @@ def register_factory(
                             mapping[key][endpoint] = wrapped
                         # add endpoint to mapping as a key
                 else:
-                    if func_dict.default_factory is None:
-                        func_dict.default_factory = wrapped
+                    if func_dict.default_factory() == _none_func:
+                        func_dict.default_factory = lambda: wrapped
                     else:
                         # We don't want to set a conflicting default
                         raise ConflictingKeys(key)
             else:
                 if _endpoints:
-                    mapping[key] = defaultdict(lambda: None)
+                    mapping[key] = defaultdict(lambda: _none_func)
                     for endpoint in _endpoints:
                         mapping[key][endpoint] = wrapped
                 else:

@@ -60,3 +60,11 @@ class ExpectPrimitives(Resource):
     @api.expect(primitive_query_parser)
     def get(self):
         return string_model.output()
+
+
+@api.marshal_with(string_model.format)
+@ns.route('/other')
+class ExpectOtherPrimitives(Resource):
+    @api.expect(primitive_query_parser)
+    def get(self):
+        return string_model.output()

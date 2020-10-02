@@ -44,15 +44,49 @@ def test_basic():
     assert get_user_defined_mapping()['a']['opid']() == 1
 
 
+class TestEndpointFixtures:
+    """
+    Note: Since defaultdict creates a key-value pair once a non-existent key
+    is called, if we change the default value, keys that have been encountered
+    will not have the new value. This shouldn't be a problem since we don't
+    do not request keys until all the factories are registered.
+    """
+
+    def test_register_endpoints_default(self):
+        register_function('a', return_value=1)
+
+        assert get_user_defined_mapping()['a']['endpoint']() == 1
+        assert get_user_defined_mapping()['a']['other_endpoint']() == 1
+
+    def test_register_endpoints_no_default(self):
+        register_function('a', endpoints=['endpoint'], return_value=1)
+
+        assert get_user_defined_mapping()['a']['endpoint']() == 1
+        assert get_user_defined_mapping()['a']['other_endpoint']() is None
+
+    def test_register_endpoints_both(self):
+        register_function('a', return_value=1)
+        register_function('a', endpoints=['other_endpoint'], return_value=2)
+
+        assert get_user_defined_mapping()['a']['endpoint']() == 1
+        assert get_user_defined_mapping()['a']['other_endpoint']() == 2
+
+
 class TestInjectVariables:
 
     def setup(self):
         fuzz_lightyear.register_factory('nested_dependency')(self.nested_dependency)
         fuzz_lightyear.register_factory('caller')(self.caller)
+        fuzz_lightyear.register_factory('caller', 'new_opid')(self.special_caller)
+        fuzz_lightyear.register_factory('caller', 'only_opid')(self.endpt_specific_caller)
         fuzz_lightyear.register_factory('dependency')(self.dependency)
+        fuzz_lightyear.register_factory('endpt_dependency', 'only_opid')(self.dependency)
 
     def test_uses_default(self):
         assert get_user_defined_mapping()['caller']['opid']() == 2
+
+    def test_nested_endpoint_dependency(self):
+        assert get_user_defined_mapping()['caller']['new_opid']() == 3
 
     def test_throws_error_when_no_default(self):
         def foobar(no_default):
@@ -62,8 +96,15 @@ class TestInjectVariables:
         with pytest.raises(TypeError):
             get_user_defined_mapping()['a']['opid']()
 
+    # We should never use the endpoint-specific fixture.
     def test_nested_dependency(self):
         assert get_user_defined_mapping()['nested_dependency']['opid']() == 4
+        assert get_user_defined_mapping()['nested_dependency']['new_opid']() == 4
+
+    # If the dependency is endpoint-specific then we should fail.
+    def test_endpoint_dependency_fails(self):
+        with pytest.raises(TypeError):
+            get_user_defined_mapping()['caller']['only_opid']()
 
     def test_re_registration(self):
         function = fuzz_lightyear.register_factory('a')(self.dependency)
@@ -78,6 +119,14 @@ class TestInjectVariables:
     @staticmethod
     def caller(dependency):
         return dependency + 1
+
+    @staticmethod
+    def special_caller(dependency):
+        return dependency + 2
+
+    @staticmethod
+    def endpt_specific_caller(endpt_dependency):
+        return endpt_dependency + 2
 
     @staticmethod
     def dependency():
@@ -124,9 +173,9 @@ class TestTypeHinting:
         return dependency
 
 
-def register_function(key, return_value=None):
+def register_function(key, endpoints=None, return_value=None):
     def foobar():
         return return_value
 
-    fuzz_lightyear.register_factory(key)(foobar)
+    fuzz_lightyear.register_factory(key, endpoints)(foobar)
     return foobar
