@@ -20,17 +20,14 @@ from fuzz_lightyear.exceptions import ConflictingKeys
 from fuzz_lightyear.util import listify_decorator_args
 
 
-def _none_func() -> None:
-    return None
-
-
 def register_factory(
     keys: Union[str, Iterable[str]],
-    endpoints: Union[str, Iterable[str]] = None,
+    *,
+    operation_ids: Union[str, Iterable[str]] = None,
 ) -> Callable:
     """
     :type keys: str|iterable
-    :type endpoints: str|iterable
+    :type operation_ids: str|iterable
 
     Basic Use:
         >>> import fuzz_lightyear
@@ -48,11 +45,7 @@ def register_factory(
         ...     return 1
 
     Endpoint Specific:
-        >>> @fuzz_lightyear.register_factory('biz_id')
-        ... def create_business():
-        ...     return 1
-        >>>
-        >>> @fuzz_lightyear.register_factory('biz_id', 'test_operation')
+        >>> @fuzz_lightyear.register_factory('biz_id', operation_ids='test_operation')
         ... def create_test_business():
         ...     return 2
 
@@ -88,37 +81,40 @@ def register_factory(
     """
     # This is renamed just to make mypy happy.
     _keys = listify_decorator_args(keys)
-    _endpoints = listify_decorator_args(endpoints)
+    _operation_ids = listify_decorator_args(operation_ids)
 
     def decorator(func: Callable) -> Callable:
         wrapped = inject_user_defined_variables(func)
 
         mapping = get_user_defined_mapping()
         for key in _keys:
-            if key in mapping:
-                func_dict = mapping[key]
-                if _endpoints:
-                    for endpoint in _endpoints:
-                        if endpoint in func_dict:
-                            raise ConflictingKeys(key)  # TODO: raise different error?
-                        else:
-                            mapping[key][endpoint] = wrapped
-                        # add endpoint to mapping as a key
+            if key not in mapping:
+                if _operation_ids:
+                    mapping[key] = defaultdict(lambda: returns_none)
+                    for operation_id in _operation_ids:
+                        mapping[key][operation_id] = wrapped
                 else:
-                    if func_dict.default_factory() == _none_func:
+                    # Make defaultdict with wrapped as default
+                    mapping[key] = defaultdict(lambda: wrapped)
+            else:
+                func_dict = mapping[key]
+                if _operation_ids:
+                    for operation_id in _operation_ids:
+                        if operation_id in func_dict:
+                            raise ConflictingKeys(key, operation_id)
+                        else:
+                            func_dict[operation_id] = wrapped
+                else:
+                    if func_dict.default_factory() == returns_none:
                         func_dict.default_factory = lambda: wrapped
                     else:
                         # We don't want to set a conflicting default
                         raise ConflictingKeys(key)
-            else:
-                if _endpoints:
-                    mapping[key] = defaultdict(lambda: _none_func)
-                    for endpoint in _endpoints:
-                        mapping[key][endpoint] = wrapped
-                else:
-                    # Make defaultdict with wrapped as default
-                    mapping[key] = defaultdict(lambda: wrapped)
 
         return wrapped
 
     return decorator
+
+
+def returns_none() -> None:
+    return None

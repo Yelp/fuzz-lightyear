@@ -108,7 +108,7 @@ def get_user_defined_mapping() -> Dict:
     mapping endpoints to fuzzing factories. If a default value does not
     exist, then the default value will be None.
 
-    :rtype: dict(str => defaultdict(str => function))
+    :returns: mapping from variable_name => operation_id => user_defined_function
     """
     return {}
 
@@ -191,9 +191,11 @@ def inject_user_defined_variables(func: Callable) -> Callable:
 
             # We don't allow specific endpoints here, and only use the default.
             # If we don't have a default value, then we raise an error.
-            value = mapping[arg_name].default_factory()()
-            if value is None:
+            from .supplements.factory import returns_none
+            fixture_func = mapping[arg_name].default_factory()
+            if fixture_func == returns_none:
                 raise TypeError
+            value = fixture_func()
             if (
                 arg_name in type_annotations
                 and not isinstance(type_annotations[arg_name], type(List))

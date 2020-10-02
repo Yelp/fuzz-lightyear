@@ -9,8 +9,15 @@ class ConflictingKeys(BaseFuzzingError):
     def __init__(
         self,
         key: str,
+        operation_id: str = None,
         *args: Any,
     ) -> None:
+        if operation_id:
+            return super().__init__(
+                'There are multiple factory registrations for "{}" in "{}".'
+                .format(operation_id, key),
+                *args,
+            )
         return super().__init__(
             'There are multiple factory registrations for "{}".'.format(key),
             *args,

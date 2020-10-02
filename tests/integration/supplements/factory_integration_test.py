@@ -28,7 +28,7 @@ def test_endpoint_specific(mock_client):
     fuzz_lightyear.register_factory('string, integer')(factory)
     fuzz_lightyear.register_factory(
         'string, integer',
-        'get_expect_other_primitives',
+        operation_ids='get_expect_other_primitives',
     )(other_factory)
 
     request = FuzzingRequest(

@@ -17,7 +17,7 @@ from .settings import get_settings
 
 def fuzz_parameters(
     parameters: List[Tuple[str, Dict[str, Any]]],
-    operation_id: str,
+    operation_id: str = None,
 ) -> SearchStrategy:
     output = {}
     for name, parameter in parameters:
@@ -28,7 +28,7 @@ def fuzz_parameters(
 
 def _fuzz_parameter(
     parameter: Dict[str, Any],
-    operation_id: str,
+    operation_id: str = None,
     required: bool = False,
 ) -> SearchStrategy:
     """
@@ -167,7 +167,7 @@ def _fuzz_boolean(
 
 def _fuzz_array(
     parameter: Dict[str, Any],
-    operation_id: str,
+    operation_id: str = None,
     required: bool = False,
 ) -> SearchStrategy:
     item = parameter['items']
@@ -190,7 +190,7 @@ def _fuzz_array(
 
 def _fuzz_object(
     parameter: Dict[str, Any],
-    operation_id: str,
+    operation_id: str = None,
     **kwargs: Any,
 ) -> SearchStrategy:
     # TODO: Handle `additionalProperties`
@@ -231,7 +231,7 @@ def _fuzz_object(
 
 def _get_strategy_from_factory(
     expected_type: str,
-    operation_id: str,
+    operation_id: str = None,
     name: Optional[str] = None,
 ) -> Optional[SearchStrategy[Any]]:
     if name not in get_user_defined_mapping():
@@ -239,7 +239,10 @@ def _get_strategy_from_factory(
 
     def type_cast() -> Any:
         """Use known types to cast output, if applicable."""
-        output = get_user_defined_mapping()[name][operation_id]()
+        if operation_id is None:
+            output = get_user_defined_mapping()[name].default_factory()
+        else:
+            output = get_user_defined_mapping()[name][operation_id]()
         if output is None:
             # NOTE: We don't currently support `nullable` values, so we use `None`
             #       as a proxy to exclude the parameter from the final dictionary.

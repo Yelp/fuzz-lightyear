@@ -59,14 +59,14 @@ class TestEndpointFixtures:
         assert get_user_defined_mapping()['a']['other_endpoint']() == 1
 
     def test_register_endpoints_no_default(self):
-        register_function('a', endpoints=['endpoint'], return_value=1)
+        register_function('a', operation_ids=['endpoint'], return_value=1)
 
         assert get_user_defined_mapping()['a']['endpoint']() == 1
         assert get_user_defined_mapping()['a']['other_endpoint']() is None
 
     def test_register_endpoints_both(self):
         register_function('a', return_value=1)
-        register_function('a', endpoints=['other_endpoint'], return_value=2)
+        register_function('a', operation_ids=['other_endpoint'], return_value=2)
 
         assert get_user_defined_mapping()['a']['endpoint']() == 1
         assert get_user_defined_mapping()['a']['other_endpoint']() == 2
@@ -77,10 +77,19 @@ class TestInjectVariables:
     def setup(self):
         fuzz_lightyear.register_factory('nested_dependency')(self.nested_dependency)
         fuzz_lightyear.register_factory('caller')(self.caller)
-        fuzz_lightyear.register_factory('caller', 'new_opid')(self.special_caller)
-        fuzz_lightyear.register_factory('caller', 'only_opid')(self.endpt_specific_caller)
+        fuzz_lightyear.register_factory(
+            'caller',
+            operation_ids='new_opid',
+        )(self.special_caller)
+        fuzz_lightyear.register_factory(
+            'caller',
+            operation_ids='only_opid',
+        )(self.endpt_specific_caller)
         fuzz_lightyear.register_factory('dependency')(self.dependency)
-        fuzz_lightyear.register_factory('endpt_dependency', 'only_opid')(self.dependency)
+        fuzz_lightyear.register_factory(
+            'endpt_dependency',
+            operation_ids='only_opid',
+        )(self.dependency)
 
     def test_uses_default(self):
         assert get_user_defined_mapping()['caller']['opid']() == 2
@@ -173,9 +182,9 @@ class TestTypeHinting:
         return dependency
 
 
-def register_function(key, endpoints=None, return_value=None):
+def register_function(key, operation_ids=None, return_value=None):
     def foobar():
         return return_value
 
-    fuzz_lightyear.register_factory(key, endpoints)(foobar)
+    fuzz_lightyear.register_factory(key, operation_ids=operation_ids)(foobar)
     return foobar
