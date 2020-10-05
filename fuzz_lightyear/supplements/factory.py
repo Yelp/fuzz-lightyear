@@ -84,7 +84,14 @@ def register_factory(
     _operation_ids = listify_decorator_args(operation_ids)
 
     def decorator(func: Callable) -> Callable:
-        wrapped = inject_user_defined_variables(func)
+
+        # We only allow single operation ids to be passed through nested
+        # factories because we can't resolve many to one factories without
+        # rewriting how we handle endpoint specific fixtures.
+        if len(_operation_ids) == 1:
+            wrapped = inject_user_defined_variables(func, operation_id=_operation_ids[0])
+        else:
+            wrapped = inject_user_defined_variables(func, )
 
         mapping = get_user_defined_mapping()
         for key in _keys:
