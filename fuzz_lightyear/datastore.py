@@ -204,7 +204,6 @@ def inject_user_defined_variables(
 
                 if arg_name not in mapping:
                     raise TypeError
-
                 if operation_id is not None:
                     value = mapping[arg_name][operation_id]()
 
@@ -233,8 +232,6 @@ def inject_user_defined_variables(
         return wrapped
     if original_callable and callable(original_callable):
         return inject_variables(original_callable)
-    elif callable(original_callable):
-        raise TypeError  # This function was called without its keyword
     else:
         return inject_variables
 

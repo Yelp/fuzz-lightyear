@@ -213,6 +213,78 @@ Request Sequence:
 ================================== 1 failed in 1.2 seconds =================================
 ```
 
+### Endpoint Specific Fixtures
+Let's say that we have another endpoint , `get_user_by_id`, that requires a different kind of `userID`. We can't use the existing `userID` fixture, since it generates the wrong type of ID. We can solve this by writing an endpoint specific fixture.
+
+
+```python
+# fixtures.py
+import fuzz_lightyear
+
+
+@fuzz_lightyear.register_factory('userID')
+def create_biz_user_id(businessID):
+    return businessID + 1
+
+
+@fuzz_lightyear.register_factory('userID', endpoint_ids=["get_user_by_id"])
+def create_user_id():
+    return 'foo'
+
+
+@fuzz_lightyear.register_factory('businessID')
+def create_business():
+    return 1
+```
+
+Which will produce:
+
+```bash
+...
+_________________________ user.get_user_by_id [IDORPlugin] _________________________
+Request Sequence:
+[
+  "curl -X GET http://localhost:5000/user/foo"
+]
+================================== 1 failed in 1.2 seconds =================================
+```
+
+We can combine this with nested fixtures as well, but if we specify an endpoint in a fixture, every fixture that depends on that fixture will also need to specify the endpoint.
+
+```python
+# fixtures.py
+import fuzz_lightyear
+
+
+# We have to specify get_business_by_id here!
+@fuzz_lightyear.register_factory('userID', endpoint_ids=["get_business_by_id"])
+def create_biz_user_id(businessID):
+    return businessID + 1
+
+
+@fuzz_lightyear.register_factory('userID')
+def create_user_id():
+    return 'foo'
+
+
+@fuzz_lightyear.register_factory('businessID', endpoint_ids=["get_business_by_id"])
+def create_business():
+    return 1
+```
+
+Which will produce:
+
+```bash
+...
+_________________________ user.get_user_by_id [IDORPlugin] _________________________
+Request Sequence:
+[
+  "curl -X GET http://localhost:5000/biz_user/2/invoices"
+]
+================================== 1 failed in 1.2 seconds =================================
+```
+
+
 ### Authentication Fixtures
 
 We can use fixtures to specify authentication/authorization methods to the Swagger

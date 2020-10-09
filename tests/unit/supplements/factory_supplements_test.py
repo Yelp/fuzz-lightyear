@@ -113,10 +113,9 @@ class TestInjectVariables:
     def test_endpoint_dependency_single(self):
         get_user_defined_mapping()['caller']['only_opid']() == 3
 
-    # If the current factory is not specified for the same operation_id,
-    # then we only use the default values for nested dependencies.
-    def test_nested_endpoint_dependency_uses_default(self):
-        assert get_user_defined_mapping()['nested_dependency']['new_opid']() == 4
+    @pytest.mark.xfail(reason='See https://github.com/Yelp/fuzz-lightyear/issues/62')
+    def test_nested_generic_dependency_uses_specific_dependency(self):
+        assert get_user_defined_mapping()['nested_dependency']['new_opid']() == 6
 
     def test_re_registration(self):
         function = fuzz_lightyear.register_factory('a')(self.dependency)

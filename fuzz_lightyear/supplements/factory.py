@@ -85,13 +85,7 @@ def register_factory(
 
     def decorator(func: Callable) -> Callable:
 
-        # We only allow single operation ids to be passed through nested
-        # factories because we can't resolve many to one factories without
-        # rewriting how we handle endpoint specific fixtures.
-        if len(_operation_ids) == 1:
-            wrapped = inject_user_defined_variables(func, operation_id=_operation_ids[0])
-        else:
-            wrapped = inject_user_defined_variables(func, )
+        wrapped = inject_user_defined_variables(func, )
 
         mapping = get_user_defined_mapping()
         for key in _keys:
@@ -99,7 +93,10 @@ def register_factory(
                 if _operation_ids:
                     mapping[key] = defaultdict(lambda: returns_none)
                     for operation_id in _operation_ids:
-                        mapping[key][operation_id] = wrapped
+                        mapping[key][operation_id] = inject_user_defined_variables(
+                            func,
+                            operation_id=operation_id,
+                        )
                 else:
                     # Make defaultdict with wrapped as default
                     mapping[key] = defaultdict(lambda: wrapped)
@@ -110,7 +107,10 @@ def register_factory(
                         if operation_id in func_dict:
                             raise ConflictingKeys(key, operation_id)
                         else:
-                            func_dict[operation_id] = wrapped
+                            func_dict[operation_id] = inject_user_defined_variables(
+                                func,
+                                operation_id=operation_id,
+                            )
                 else:
                     if func_dict.default_factory() == returns_none:
                         func_dict.default_factory = lambda: wrapped
