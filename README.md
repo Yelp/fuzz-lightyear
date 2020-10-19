@@ -227,7 +227,7 @@ def create_biz_user_id(businessID):
     return businessID + 1
 
 
-@fuzz_lightyear.register_factory('userID', endpoint_ids=["get_user_by_id"])
+@fuzz_lightyear.register_factory('userID', endpoint_ids=['get_user_by_id'])
 def create_user_id():
     return 'foo'
 
@@ -257,17 +257,12 @@ import fuzz_lightyear
 
 
 # We have to specify get_business_by_id here!
-@fuzz_lightyear.register_factory('userID', endpoint_ids=["get_business_by_id"])
+@fuzz_lightyear.register_factory('userID', endpoint_ids=['get_business_by_id'])
 def create_biz_user_id(businessID):
     return businessID + 1
 
 
-@fuzz_lightyear.register_factory('userID')
-def create_user_id():
-    return 'foo'
-
-
-@fuzz_lightyear.register_factory('businessID', endpoint_ids=["get_business_by_id"])
+@fuzz_lightyear.register_factory('businessID', endpoint_ids=['get_business_by_id'])
 def create_business():
     return 1
 ```
