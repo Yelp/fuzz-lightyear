@@ -222,7 +222,7 @@ class FuzzingRequest:
 
                 parameters.append((name, specification,))
 
-            self._fuzzed_input_factory = fuzz_parameters(parameters)
+            self._fuzzed_input_factory = fuzz_parameters(parameters, self.operation_id)
 
         # NOTE: If we were really worried about performance later on,
         #       we might be able to address this. Specifically, we don't

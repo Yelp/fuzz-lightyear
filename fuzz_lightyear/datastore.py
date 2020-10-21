@@ -103,9 +103,13 @@ def get_setup_fixtures() -> List:
 def get_user_defined_mapping() -> Dict:
     """
     This is essentially a global variable, within a function scope, because
-    this returns a reference to the cached dictionary.
+    this returns a reference to the cached dictionary. The mapping is a
+    dictionary with variable names as keys. The values are defaultdicts
+    mapping endpoints to fuzzing factories. If a default value does not
+    exist, then the default value will be None.
 
-    :rtype: dict(str => function)
+    :rtype: dict(str => defaultdict(str => function))
+    :returns: mapping from variable_name => operation_id => user_defined_function
     """
     return {}
 
@@ -147,13 +151,20 @@ def get_non_vulnerable_operations() -> Dict[str, Optional[str]]:
 
 def clear_cache() -> None:
     """ Clear the cached values for fixture functions """
-    for value in get_user_defined_mapping().values():
-        value._fuzz_cache = None
+    for operation_ids in get_user_defined_mapping().values():
+        for value in operation_ids.values():
+            value._fuzz_cache = None
 
 
-def inject_user_defined_variables(func: Callable) -> Callable:
+def inject_user_defined_variables(
+        original_callable: Callable = None,
+        *,
+        operation_id: str = None
+) -> Callable:
     """
     This decorator allows the use of user defined variables in functions.
+    By default it uses default_factory for the values, but if an operation_id
+    is passed in we use that to determine the value instead.
     e.g.
         >>> @fuzz_lightyear.register_factory('name')
         ... def name():
@@ -162,47 +173,67 @@ def inject_user_defined_variables(func: Callable) -> Callable:
         >>> @inject_user_defined_variables
         ... def foobar(name):
         ...     print(name)     # freddy
+        >>>
+        >>> @fuzz_lightyear.register_factory('name', operation_ids='foo')
+        ... def name():
+        ...     return 'nathan'
+        >>>
+        >>> @inject_user_defined_variables(operation_id='foo')
+        ... def foobar(name):
+        ...     print(name)     # nathan
     """
-    mapping = get_user_defined_mapping()
+    def inject_variables(func: Callable) -> Callable:
+        mapping = get_user_defined_mapping()
 
-    @wraps(func)
-    def wrapped(*args: Any, **kwargs: Any) -> Any:
-        arg_tuple = (args, tuple(sorted(kwargs)))
-        if getattr(func, '_fuzz_cache', None) is not None \
-                and arg_tuple in func._fuzz_cache:  # type: ignore
+        @wraps(func)
+        def wrapped(*args: Any, **kwargs: Any) -> Any:
+            arg_tuple = (args, tuple(sorted(kwargs)))
+            if getattr(func, '_fuzz_cache', None) is not None \
+                    and arg_tuple in func._fuzz_cache:  # type: ignore
+                return func._fuzz_cache[arg_tuple]  # type: ignore
+
+            expected_args = _get_injectable_variables(func)
+            type_annotations = inspect.getfullargspec(func).annotations
+
+            for index, arg_name in enumerate(expected_args):
+                if index < len(args):
+                    # This handles the case of explicitly supplied
+                    # positional arguments, so that we don't pass func
+                    # two values for the same argument.
+                    continue
+
+                if arg_name not in mapping:
+                    raise TypeError
+                if operation_id is not None:
+                    value = mapping[arg_name][operation_id]()
+
+                else:
+                    from .supplements.factory import returns_none
+                    fixture_func = mapping[arg_name].default_factory()
+                    if fixture_func == returns_none:
+                        raise TypeError
+                    value = fixture_func()
+                if (
+                    arg_name in type_annotations
+                    and not isinstance(type_annotations[arg_name], type(List))
+                ):
+                    # If type annotations are used, use that to cast
+                    # values for input.
+                    value = type_annotations[arg_name](value)
+
+                kwargs[arg_name] = value
+
+            if getattr(func, '_fuzz_cache', None) is not None:
+                func._fuzz_cache[arg_tuple] = func(*args, **kwargs)  # type: ignore
+            else:
+                func._fuzz_cache = {arg_tuple: func(*args, **kwargs)}  # type: ignore
             return func._fuzz_cache[arg_tuple]  # type: ignore
 
-        expected_args = _get_injectable_variables(func)
-        type_annotations = inspect.getfullargspec(func).annotations
-
-        for index, arg_name in enumerate(expected_args):
-            if index < len(args):
-                # This handles the case of explicitly supplied
-                # positional arguments, so that we don't pass func
-                # two values for the same argument.
-                continue
-
-            if arg_name not in mapping:
-                raise TypeError
-
-            value = mapping[arg_name]()
-            if (
-                arg_name in type_annotations
-                and not isinstance(type_annotations[arg_name], type(List))
-            ):
-                # If type annotations are used, use that to cast
-                # values for input.
-                value = type_annotations[arg_name](value)
-
-            kwargs[arg_name] = value
-
-        if getattr(func, '_fuzz_cache', None) is not None:
-            func._fuzz_cache[arg_tuple] = func(*args, **kwargs)  # type: ignore
-        else:
-            func._fuzz_cache = {arg_tuple: func(*args, **kwargs)}  # type: ignore
-        return func._fuzz_cache[arg_tuple]  # type: ignore
-
-    return wrapped
+        return wrapped
+    if original_callable and callable(original_callable):
+        return inject_variables(original_callable)
+    else:
+        return inject_variables
 
 
 def _get_injectable_variables(func: Callable) -> Tuple[str, ...]:
