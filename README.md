@@ -2,6 +2,10 @@
 
 # fuzz-lightyear
 
+<p align="center">
+<img src="./docs/logo.png" width="200">
+</p>
+
 fuzz-lightyear is a [pytest-inspired](https://docs.pytest.org/en/latest/),
 [DAST](https://en.wikipedia.org/wiki/Dynamic_Application_Security_Testing) framework,
 capable of identifying vulnerabilities in a distributed, micro-service ecosystem through
