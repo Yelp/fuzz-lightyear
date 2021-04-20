@@ -33,7 +33,7 @@ nodeenv==1.3.3
 packaging==19.1
 pluggy==0.12.0
 pre-commit==1.18.3
-py==1.8.0
+py==1.10.0
 pyparsing==2.4.2
 pyrsistent==0.15.4
 pytest==5.1.1
