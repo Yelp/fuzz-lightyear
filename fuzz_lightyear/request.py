@@ -14,7 +14,7 @@ from urllib.parse import urlencode
 from bravado.client import CallableOperation
 from bravado_core.param import get_param_type_spec      # type: ignore
 from cached_property import cached_property             # type: ignore
-from hypothesis.strategies import SearchStrategy
+from hypothesis.strategies import SearchStrategy  # noqa: F401
 
 from .datastore import get_post_fuzz_hooks
 from .datastore import inject_user_defined_variables

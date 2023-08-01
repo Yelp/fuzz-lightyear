@@ -3,8 +3,8 @@ import textwrap
 import traceback
 from collections import Counter
 from datetime import datetime
-from typing import List
-from typing import Optional
+from typing import List  # noqa: F401
+from typing import Optional  # noqa: F401
 
 from . import formatter
 from ..result import FuzzingResult

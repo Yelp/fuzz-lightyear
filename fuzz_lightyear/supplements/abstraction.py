@@ -1,9 +1,9 @@
 from functools import lru_cache
 from typing import Any
 from typing import Callable
-from typing import Optional
+from typing import Optional  # noqa: F401
 
-from bravado.client import SwaggerClient
+from bravado.client import SwaggerClient  # noqa: F401
 
 from fuzz_lightyear.exceptions import ConflictingHandlers
 
