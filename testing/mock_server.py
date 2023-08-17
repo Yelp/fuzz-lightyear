@@ -1,12 +1,12 @@
 import json
 import logging
-import multiprocessing as mp
 import os
 from contextlib import contextmanager
 from contextlib import redirect_stdout
 from time import sleep
 
 import requests
+from multiprocess import Process
 
 from testing.vulnerable_app.__main__ import main as start_server
 
@@ -32,7 +32,7 @@ def vulnerable_server():
     is_it_up = is_server_up()
     if not is_it_up:
         starting_up = True
-        mp.Process(
+        Process(
             target=spin_up_server,
         ).start()
 

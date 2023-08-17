@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/Yelp/fuzz-lightyear.svg?branch=master)](https://travis-ci.com/Yelp/fuzz-lightyear)
+[![Build Status](https://github.com/Yelp/fuzz-lightyear/actions/workflows/fuzz-lightyear-build.yml/badge.svg)](https://github.com/Yelp/fuzz-lightyear/actions/workflows/fuzz-lightyear-build.yml)
 
 # fuzz-lightyear
 
