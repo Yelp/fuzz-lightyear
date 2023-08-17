@@ -18,13 +18,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.8"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
-        python-version: ${{ matrix.python-version }}
+        # tests.result_test.test_successful_sequence is flaky in GA's version of python (3.8.17)
+        # fixing to current python version of devbox
+        # also, 3.8.13 is not available for platform==win32; so setting a range
+        python-version: '>=3.8.10 <=3.8.13'
 
     - name: Install dependencies and test
       run: |
