@@ -5,7 +5,7 @@ attrs==19.2.0
 bravado==10.4.1
 bravado-core==5.13.1
 cached-property==1.5.1
-certifi==2019.6.16
+certifi==2023.7.22
 cfgv==3.2.0
 chardet==3.0.4
 Click==7.0
