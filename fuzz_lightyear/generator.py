@@ -58,7 +58,7 @@ def generate_sequences(
     #       (rather than starting operation), so that it's clearer for
     #       output.
     client = get_abstraction().client
-    request_graph = _generate_request_graph()
+    request_graph = generate_request_graph()
     for tag_group in get_fuzzable_tags(client):
         last_results = []   # type: List
         for _ in range(n):
@@ -124,7 +124,7 @@ def _add_request_to_sequence(
 
 
 @lru_cache(maxsize=1)
-def _generate_request_graph() -> Dict[str, set]:
+def generate_request_graph() -> Dict[str, set]:
     """
     Generates a directed graph, represented as an adjacency list.
 
@@ -140,6 +140,8 @@ def _generate_request_graph() -> Dict[str, set]:
         for operation_id in dir(getattr(client, tag_group)):
             operation = getattr(getattr(client, tag_group), operation_id).operation
             responses = operation.op_spec.get('responses', {}).get('200', {})
+            if not responses:
+                responses = operation.op_spec.get('responses', {}).get('201', {})
             if responses:
                 response_params = list(
                     responses.get('schema', {}).get('properties', {}).keys(),

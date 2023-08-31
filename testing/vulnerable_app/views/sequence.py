@@ -64,7 +64,7 @@ class BravoTwo(Resource):
 @ns.route('/side-effect/create')
 class CreateWithSideEffect(Resource):
     @api.doc(security='apikey')
-    @api.response(200, 'Success', model=widget_model)
+    @api.response(201, 'Success', model=widget_model)
     @requires_user
     def post(self, user):
 
@@ -81,7 +81,7 @@ class CreateWithSideEffect(Resource):
 
         return {
             'id': widget_id,
-        }
+        }, 201
 
 
 @ns.route('/side-effect/get/<int:id>')
