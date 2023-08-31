@@ -6,6 +6,7 @@ inconvenient than it needs to be.
 import pytest
 
 import fuzz_lightyear
+from fuzz_lightyear.generator import generate_request_graph
 from fuzz_lightyear.generator import generate_sequences
 
 
@@ -164,6 +165,17 @@ def test_length_three(mock_client):
         ],
         sequences,
     )
+
+
+def test_request_graph(mock_client):
+    requested_graph = generate_request_graph()
+    node = 'get_bravo_two'
+    expected_edges = [
+        'get_get_with_side_effect_unsafe', 'post_create_with_side_effect',
+        'get_get_with_side_effect_safe',
+    ]
+    for e in expected_edges:
+        assert e in requested_graph[node]
 
 
 def is_in_result(expected_sequence, result):
