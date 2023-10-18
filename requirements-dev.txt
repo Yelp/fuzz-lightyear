@@ -53,7 +53,7 @@ tox==3.24.4
 tox-pip-extensions==1.6.0
 typed-ast==1.4.3
 typing-extensions==3.7.4
-urllib3==1.26.17
+urllib3==1.26.18
 virtualenv==20.6.0
 wcwidth==0.1.7
 webcolors==1.9.1
