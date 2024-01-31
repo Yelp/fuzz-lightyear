@@ -104,6 +104,13 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         ),
     )
 
+    parser.add_argument(
+        '--depth',
+        default=6,
+        type=int,
+        help='Maximum depth for generating nested fuzz parameters.',
+    )
+
     return parser.parse_args(argv)
 
 

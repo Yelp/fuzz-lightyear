@@ -3,12 +3,18 @@ from functools import lru_cache
 
 from hypothesis import core
 
+from fuzz_lightyear.config import ENABLE_COLOR
+from fuzz_lightyear.config import MAX_FUZZ_DEPTH
+from fuzz_lightyear.config import SEED_RANDOM_LENGTH
+from fuzz_lightyear.config import UNICODE_ENABLED
+
 
 class Settings:
     def __init__(self) -> None:
-        self.seed = random.getrandbits(128)    # type: int
-        self.unicode_enabled = True            # type: bool
-        self.enable_color = True               # type: bool
+        self.seed = random.getrandbits(SEED_RANDOM_LENGTH)  # type: int
+        self.unicode_enabled = UNICODE_ENABLED              # type: bool
+        self.enable_color = ENABLE_COLOR                    # type: bool
+        self.max_fuzz_depth = MAX_FUZZ_DEPTH                # type: int
 
     @property
     def seed(self) -> int:

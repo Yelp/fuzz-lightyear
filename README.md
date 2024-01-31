@@ -66,6 +66,7 @@ optional arguments:
   --ignore-exceptions   Ignores all exceptions raised during fuzzing (aka.
                         only fails when vulnerabilities are found).
   --disable-unicode     Disable unicode characters in fuzzing, only use ASCII.
+  --depth DEPTH         Maximum depth for generating nested fuzz parameters.
 
 ```
 

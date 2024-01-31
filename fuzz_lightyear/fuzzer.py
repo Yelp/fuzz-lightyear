@@ -30,6 +30,7 @@ def _fuzz_parameter(
     parameter: Dict[str, Any],
     operation_id: str = None,
     required: bool = False,
+    depth: int = 0,
 ) -> SearchStrategy:
     """
     :param required: for object types, the required parameter is in a
@@ -78,7 +79,12 @@ def _fuzz_parameter(
         }
         fuzz_fn = mapping[_type]
         if fuzz_fn in (_fuzz_object, _fuzz_array):
-            strategy = fuzz_fn(parameter, operation_id, required=required)  # type: ignore
+            strategy = fuzz_fn(
+                parameter,
+                operation_id,
+                depth + 1,
+                required=required,
+            )  # type: ignore
         else:
             strategy = fuzz_fn(parameter, required=required)  # type: ignore
 
@@ -168,6 +174,7 @@ def _fuzz_boolean(
 def _fuzz_array(
     parameter: Dict[str, Any],
     operation_id: str = None,
+    depth: int = 0,
     required: bool = False,
 ) -> SearchStrategy:
     item = parameter['items']
@@ -175,12 +182,14 @@ def _fuzz_array(
 
     # TODO: Handle `oneOf`
     strategy = st.lists(
-        elements=_fuzz_parameter(item, operation_id, required=required),
+        elements=_fuzz_parameter(item, operation_id, required=required, depth=depth + 1),
         min_size=parameter.get(
             'minItems',
             0 if not required else 1,
         ),
-        max_size=parameter.get('maxItems', None),
+        max_size=(0
+                  if depth > get_settings().max_fuzz_depth
+                  else parameter.get('maxItems', None)),
     )
     if not required:
         return st.one_of(st.none(), strategy)
@@ -191,10 +200,18 @@ def _fuzz_array(
 def _fuzz_object(
     parameter: Dict[str, Any],
     operation_id: str = None,
+    depth: int = 0,
     **kwargs: Any,
 ) -> SearchStrategy:
     # TODO: Handle `additionalProperties`
     output = {}
+
+    if (
+        depth > get_settings().max_fuzz_depth or
+        'properties' not in parameter
+    ):
+        return st.none()
+
     for name, specification in parameter['properties'].items():
         try:
             strategy = _get_strategy_from_factory(
@@ -224,6 +241,7 @@ def _fuzz_object(
             specification,
             operation_id,
             bool(required),
+            depth + 1,
         )
 
     return st.fixed_dictionaries(output)
