@@ -20,12 +20,16 @@ VERSION = None      # needed for flake8
 with open(local_file('fuzz_lightyear/version.py')) as f:
     exec(f.read())
 
+with open('README.md', encoding='utf-8') as f:
+    long_description = f.read()
 
 setup(
     name='fuzz_lightyear',
     packages=find_packages(exclude=(['test*', 'tmp*'])),
     version=VERSION,
     description='Vulnerability Discovery through Stateful Swagger Fuzzing',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     license='Copyright Yelp, Inc. 2019',
     author=', '.join([
         'Aaron Loo <aaronloo@yelp.com>',
