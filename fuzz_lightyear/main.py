@@ -12,6 +12,7 @@ from bravado.exception import HTTPError
 from hypothesis.errors import NonInteractiveExampleWarning
 from swagger_spec_validator.common import SwaggerValidationError    # type: ignore
 
+from .config import MAX_FUZZ_DEPTH
 from .datastore import get_excluded_operations
 from .datastore import get_non_vulnerable_operations
 from .datastore import get_setup_fixtures
@@ -56,6 +57,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         seed=args.seed,
         ignore_exceptions=args.ignore_exceptions,
         disable_unicode=args.disable_unicode,
+        max_fuzz_depth=args.depth,
     )
 
     outputter.show_results()
@@ -112,6 +114,7 @@ def run_tests(
     seed: int = None,
     ignore_exceptions: bool = False,
     disable_unicode: bool = False,
+    max_fuzz_depth: int = MAX_FUZZ_DEPTH,
 ) -> ResultFormatter:
     """
     :param tests: list of tests to run.
@@ -121,12 +124,14 @@ def run_tests(
     :param seed: used for random generation of test input
     :param ignore_exceptions: if True, ignores HTTP exceptions to requests.
     :param disable_unicode: if True, only use ASCII characters to fuzz strings
+    :param max_fuzz_depth: used for preventing recursion Objects with self reference
     """
     if seed is not None:
         get_settings().seed = seed
     if disable_unicode:
         get_settings().unicode_enabled = False
 
+    get_settings().max_fuzz_depth = max_fuzz_depth
     outputter = ResultFormatter()
     for result in generate_sequences(
         n=iterations,
