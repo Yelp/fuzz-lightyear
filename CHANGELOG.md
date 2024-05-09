@@ -21,6 +21,18 @@ If you love `fuzz-lightyear`, please star our project on GitHub to show your sup
 [#xxxx]: https://github.com/Yelp/detect-secrets-server/pull/xxxx
 [@xxxx]: https://github.com/xxxx
 -->
+
+### 0.0.11
+##### May 9, 2024
+
+#### :bug: Bug Fixes
+- Fix macOS build failure ([#93](https://github.com/Yelp/fuzz-lightyear/pull/93))
+- Limit depth of nested Objects when generating fuzz parameters ([#89](https://github.com/Yelp/fuzz-lightyear/pull/89))
+#### :snake: Miscellaneous
+- Setup `Github workflows` for publishing to **PyPI** ([#90](https://github.com/Yelp/fuzz-lightyear/pull/90))
+- Migrate Travis-ci to Github actions ([#81](https://github.com/Yelp/fuzz-lightyear/pull/81))
+- Support Py38 and drop EOL py versions ([#79](https://github.com/Yelp/fuzz-lightyear/pull/79))
+
 ### 0.0.9
 ##### August 19, 2020
 
