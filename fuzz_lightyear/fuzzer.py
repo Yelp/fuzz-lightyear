@@ -6,6 +6,7 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+import hypothesis.provisional as pr
 import hypothesis.strategies as st
 from hypothesis.strategies import SearchStrategy
 from swagger_spec_validator.common import SwaggerValidationError    # type: ignore
@@ -104,6 +105,8 @@ def _fuzz_string(
     parameter: Dict[str, Any],
     required: bool = False,
 ) -> SearchStrategy:
+    # TODO: Handle date and date-time string formats.
+    # https://swagger.io/docs/specification/data-models/data-types/#string
     if parameter.get('in', None) == 'header':
         return st.text(
             # According to RFC 7230, non-ascii letters are deprecated, and there's
@@ -113,15 +116,33 @@ def _fuzz_string(
             alphabet=string.ascii_letters,
         )
 
-    # TODO: Handle a bunch of swagger string formats.
-    # https://swagger.io/docs/specification/data-models/data-types/#string
+    if parameter.get('pattern'):
+        full_match = (
+            parameter['pattern'][0] == '^'
+            and parameter['pattern'][-1] == '$'
+            and parameter['pattern'][-2] != '\\'
+        )
+        return st.from_regex(parameter['pattern'], fullmatch=full_match)
+
     kwargs = {}                                     # type: Dict[str, Any]
+
+    kwargs['min_size'] = parameter.get('minLength', 0)
+    kwargs['max_size'] = parameter.get('maxLength')
+
+    string_format = parameter.get('format')
+
+    if string_format == 'ipv4':
+        return pr.ip4_addr_strings()
+    elif string_format == 'ipv6':
+        return pr.ip6_addr_strings()
+    elif string_format == 'binary':
+        return st.binary(**kwargs)
 
     if parameter.get('required', required):
         kwargs['min_size'] = 1
+
     if not get_settings().unicode_enabled:
         kwargs['alphabet'] = string.printable
-
     return st.text(**kwargs)
 
 
@@ -133,7 +154,7 @@ def _find_bounds(schema: Dict[str, Any]) -> Dict[str, Any]:
     if 'minimum' in schema:
         bounds['min_value'] = schema['minimum']
         if schema.get('exclusiveMinimum'):
-            bounds['min_vallue'] += 1.0
+            bounds['min_value'] += 1.0
 
     if 'maximum' in schema:
         bounds['max_value'] = schema['maximum']
